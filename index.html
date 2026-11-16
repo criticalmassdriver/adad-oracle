@@ -88,6 +88,56 @@ main{max-width:760px;margin:-54px auto 0;padding:0 14px 40px;position:relative;z
 .bar i{display:block;height:100%;border-radius:6px;transition:width .5s ease,background .4s}
 .pct{text-align:right;font-weight:800;font-family:Fraunces,serif;font-size:1.15rem}
 
+/* ---------- Local resources ---------- */
+.rhead{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.rhead h2{font-family:Fraunces,serif;font-size:1.5rem;margin:0}
+.rhead p{margin:0;color:var(--mut);font-size:.88rem}
+.rsearch{width:100%;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--bg);font:inherit;margin-bottom:12px}
+.rgroup{margin-top:18px}
+.rgroup>h3{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:0 0 8px}
+.r{display:block;padding:12px 0;border-top:1px solid var(--line)}
+.rgroup .r:first-of-type{border-top:0}
+.r b{display:block;font-size:1rem;line-height:1.3}
+.r .rn{color:var(--mut);font-size:.9rem;margin-top:3px}
+.r .rl{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.r .rl a{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:10px;background:var(--bg);border:1px solid var(--line);font-size:.85rem;font-weight:600;color:var(--accent);text-decoration:none}
+.r .rl a.tel{color:var(--ink)}
+.r .tag{display:inline-block;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;color:var(--mut);border:1px solid var(--line);border-radius:6px;padding:2px 6px;margin:6px 4px 0 0}
+.rempty{color:var(--mut);font-size:.92rem}
+.rbar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.rbar .btn{padding:8px 12px;font-size:.85rem}
+.rnote{color:var(--mut);font-size:.85rem;margin:14px 0 0}
+.r .dist{display:inline-block;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;color:var(--accent);border:1px solid var(--line);border-radius:6px;padding:2px 6px;margin:6px 4px 0 0;font-weight:600}
+.rload{color:var(--mut);font-size:.9rem;margin:10px 0 0}
+/* ---------- Support organisations and flare tips ---------- */
+.riskline{background:var(--bg);border-radius:12px;padding:12px 14px;margin:0 0 6px;font-size:.92rem;line-height:1.45}
+.riskline b{display:block;margin-bottom:3px}
+.tip{display:grid;grid-template-columns:24px 1fr;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.tip:first-of-type{border-top:0}
+.tip .n{font-family:Fraunces,serif;font-weight:700;font-size:1.05rem;line-height:1.25;color:var(--accent)}
+.tip b{display:block;font-size:1rem;line-height:1.3}
+.tip p{margin:5px 0 0;color:var(--mut);font-size:.9rem}
+/* printing the list should give a plain sheet for the fridge: no tabs, no controls, no colour */
+@media print{
+  header,footer,.tabs,.row,.sens,#p-today,#p-hourly,#p-days,#geo,#zipForm,#loc,.rsearch,.rbar,.rnote{display:none!important}
+  html,body{background:#fff;color:#000}
+  main{padding:0;max-width:none}
+  .card{box-shadow:none;border:0;padding:0;margin:0}
+  .hide{display:block!important}
+  .rhead h2{font-size:18pt}
+  .rgroup{margin-top:14pt;break-inside:avoid}
+  .r{border-top:1px solid #bbb;padding:8pt 0;break-inside:avoid}
+  .r b{font-size:11pt}
+  .r .rn{font-size:9.5pt;color:#333}
+  .r .rl a{border:0;background:none;color:#000;padding:0 12pt 0 0;font-size:9.5pt}
+  .r .tag{border:1px solid #bbb;color:#444;font-size:7.5pt}
+  a[href^="http"]::after{content:" " attr(href);font-size:8pt;color:#555}
+  body[data-print=res] #p-sup{display:none!important}
+  body[data-print=sup] #p-res{display:none!important}
+  .tip{grid-template-columns:20px 1fr;padding:7pt 0;break-inside:avoid}
+  .tip p,.riskline{font-size:9.5pt;color:#333}
+  .riskline{background:none;border:1px solid #bbb;padding:7pt}
+}
 footer{max-width:760px;margin:0 auto;padding:0 14px 40px;color:var(--mut);font-size:.92rem}
 footer a{color:var(--accent);font-weight:600}
 .hide{display:none}
@@ -110,7 +160,7 @@ footer a{color:var(--accent);font-weight:600}
     <div class="row">
       <button class="btn" id="geo">Use my location</button>
       <form class="row" id="zipForm" style="flex:1">
-        <input type="text" id="zip" inputmode="numeric" maxlength="5" placeholder="or enter a US ZIP code" aria-label="US ZIP code">
+        <input type="text" id="zip" inputmode="text" maxlength="12" placeholder="or enter a ZIP / postal code" aria-label="ZIP or postal code">
         <button class="btn alt" type="submit">Go</button>
       </form>
     </div>
@@ -130,6 +180,10 @@ footer a{color:var(--accent);font-weight:600}
   <section class="card" id="p-today"></section>
   <section class="card hide" id="p-hourly"></section>
   <section class="card hide" id="p-days"></section>
+  <div class="row"><button class="btn" id="resBtn">Find resources near me</button></div>
+  <section class="card hide" id="p-res"></section>
+  <div class="row"><button class="btn" id="supBtn">Neuralgia and migraine support</button></div>
+  <section class="card hide" id="p-sup"></section>
   <div class="row"><button class="btn alt hide" id="rss">Download RSS feed</button></div>
 </main>
 
@@ -263,6 +317,7 @@ function render() {
 
   $('#rss').classList.remove('hide');
   paintScene(now[2]);
+  if (supOpen) drawSupport();            // the risk window and the place name follow the forecast
 }
 
 /* ---------- Scene: biome, holiday, time of day, weather ---------- */
@@ -361,9 +416,9 @@ function advice(detail) {
   if (/draw/i.test(d)) return 'This one is a bug in the page itself, not your connection.';
   return '';
 }
-function failed(msg, detail) {                                        // detail carries the real cause, not a guess
+function failed(msg, detail, label) {                                 // detail carries the real cause, not a guess
   const hint = advice(detail);
-  $('#loc').textContent = 'Could not load the forecast.';
+  $('#loc').textContent = label || 'Could not load the forecast.';
   $('#p-today').innerHTML = `<div class="hero"><p class="why" style="text-align:center">
     ${msg || 'The weather service did not answer. Check your connection and try again.'}</p>
     ${detail ? `<p class="why" style="text-align:center;opacity:.65;font-size:.8rem">${esc(detail)}</p>` : ''}
@@ -397,8 +452,8 @@ async function getJSON(url, tries = 2) {
     throw new Error(r.status === 429 ? 'HTTP 429, rate limited. Wait a minute, then try again.' : 'HTTP ' + r.status);
   }
 }
-async function load(lat, lon, name) {
-  lastAsk = [lat, lon, name];
+async function load(lat, lon, name, cc) {
+  lastAsk = [lat, lon, name, cc];
   $('#loc').textContent = 'Loading forecast\u2026';
   const q = 'hourly=temperature_2m,relative_humidity_2m,precipitation,precipitation_probability,surface_pressure,weather_code'
     + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&current=temperature_2m,weather_code'
@@ -412,6 +467,9 @@ async function load(lat, lon, name) {
     return failed('The weather service sent an incomplete response.', 'no hourly/daily series in the reply');
   D.lat = lat; D.lon = lon; D.place = name;
   $('#loc').textContent = name;
+  if (cc) D.cc = cc;                                                 // needed to pick the right national resource list
+  location_name = name;
+  refinePlace(lat, lon);                                              // tidy the label and fill in the country
   try {                                                              // a drawing bug must never look like a network fault
     render();
   } catch (e) {
@@ -419,27 +477,85 @@ async function load(lat, lon, name) {
     return failed('The forecast arrived but the page could not draw it.', e.message);
   }
   try {
-    localStorage.setItem('loc', JSON.stringify([lat, lon, name]));
+    localStorage.setItem('loc', JSON.stringify([lat, lon, name, D.cc || '']));
     const slim = Object.assign({}, D); delete slim._sc;
     localStorage.setItem('cache', JSON.stringify({t: Date.now(), d: slim}));   // survives a reload for 3h
   } catch (e) {}
 }
-async function byZip(z) {
-  if (!/^\d{5}$/.test(z)) { $('#loc').textContent = 'Enter a valid 5-digit US ZIP.'; return; }
-  $('#loc').textContent = 'Looking up that ZIP\u2026';
-  let detail = '';
-  try {                                                             // Open-Meteo first: same origin as the data
-    const g = await getJSON(`https://geocoding-api.open-meteo.com/v1/search?name=${z}&count=1&countryCode=US&language=en`, 1);
-    const p = g && g.results && g.results[0];
-    if (p) return load(+p.latitude, +p.longitude, p.admin1 ? `${p.name}, ${p.admin1}` : p.name);
-  } catch (e) { detail = e.message; }
-  try {                                                             // zippopotam as the precise fallback
-    const g = await getJSON(`https://api.zippopotam.us/us/${z}`, 1);
+// One extra lookup per location: which country is this, and what is the place actually called?
+// BigDataCloud's free client endpoint allows cross-origin calls and needs no key.
+async function refinePlace(lat, lon) {
+  try {
+    const r = await fetch('https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=' + lat + '&longitude=' + lon + '&localityLanguage=en');
+    if (!r.ok) return;
+    const g = await r.json();
+    if (!g) return;
+    const before = D.cc;
+    if (g.countryCode) { D.cc = g.countryCode; D.country = g.countryName || g.countryCode; }
+    const city = g.city || g.locality || '';
+    if (city && (!D.place || D.place === 'Your location')) {          // a postal code already named the place better than this can
+      D.place = (g.principalSubdivision && g.principalSubdivision !== city) ? city + ', ' + g.principalSubdivision : city;
+      if (D.place !== location_name) { location_name = D.place; $('#loc').textContent = D.place; }
+    }
+    try { localStorage.setItem('loc', JSON.stringify([D.lat, D.lon, D.place, D.cc])); } catch (e) {}
+    if (resOpen && D.cc !== before) drawResources();                  // the national list may have just changed
+  } catch (e) {}
+}
+let location_name = '', LAST_ZIP = '';   // kept so the national directories can be opened on the same place
+// Postal codes are country-specific, so each country gets its own cut of the code.
+function zipForm(cc, raw) {
+  const t = raw.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (cc === 'us') return /^\d{5}$/.test(t) ? t : '';
+  if (cc === 'ca') return /^[A-Z]\d[A-Z]\d[A-Z]\d$/.test(t) ? t.slice(0, 3) : '';   // zippopotam indexes by FSA
+  if (cc === 'gb') return /^[A-Z]{1,2}\d[A-Z\d]?\d[A-Z]{2}$/.test(t) ? t.slice(0, -3) : '';   // outward code only
+  return t;
+}
+const ZIP_ORDER = ['us', 'ca', 'gb', 'de', 'fr', 'nl', 'es', 'it', 'au', 'br', 'in', 'jp', 'pl', 'se', 'no', 'dk', 'fi', 'pt', 'ch', 'at', 'be', 'mx', 'za', 'ie', 'nz'];
+async function tryZip(cc, raw) {
+  const code = zipForm(cc, raw);
+  if (!code) return null;
+  try {
+    const g = await getJSON('https://api.zippopotam.us/' + cc + '/' + encodeURIComponent(code), 0);
     const p = g && g.places && g.places[0];
-    if (p) return load(+p.latitude, +p.longitude, `${p['place name']}, ${p['state abbreviation']}`);
-  } catch (e) { detail = detail || e.message; }
-  if (detail) return failed('Could not reach the location service. Check your connection and try again.', detail);
-  failed('That ZIP code could not be found. Try another one, or use \u201cUse my location\u201d.');
+    if (!p || !p.latitude) return null;
+    const short = String(p['place name']).replace(/\s*\(.*$/, '').trim();   // zippopotam gives long neighbourhood names
+    const ab = String(p['state abbreviation'] || '');
+    const keepAb = /^[A-Z]{2,3}$/.test(ab) && ['us', 'ca', 'gb', 'de', 'au', 'nz', 'ie', 'es', 'it', 'nl', 'br', 'mx', 'in'].indexOf(cc) > -1;
+    const place = short.slice(0, 40) + (keepAb ? ', ' + ab : '');
+    return {lat: +p.latitude, lon: +p.longitude, name: place, cc: cc.toUpperCase()};
+  } catch (e) { return null; }
+}
+async function byPostal(raw) {
+  const t = raw.trim();
+  if (!t) { $('#loc').textContent = 'Enter a ZIP or postal code.'; return; }
+  LAST_ZIP = t.replace(/[\s,][A-Za-z]{2}$/, '').trim().toUpperCase();
+  try { localStorage.setItem('zip', LAST_ZIP); } catch (e) {}
+  // "75001 FR" or "75001, FR" names the country outright, which settles the ambiguity for numeric codes
+  const hint = (t.match(/[\s,]([A-Za-z]{2})$/) || [])[1];
+  const ccHint = hint ? hint.toLowerCase() : '';
+  const code = hint ? t.slice(0, -hint.length).trim() : t;
+  if (!/^[A-Za-z0-9][A-Za-z0-9 -]{1,11}$/.test(code)) { $('#loc').textContent = 'That does not look like a ZIP or postal code.'; return; }
+  $('#loc').textContent = 'Looking up ' + code.toUpperCase() + '\u2026';
+  let detail = '';
+  if (ccHint) {
+    const hit = await tryZip(ccHint, code);
+    if (hit) return load(hit.lat, hit.lon, hit.name, hit.cc);
+    detail = 'no match for ' + code.toUpperCase() + ' in ' + ccHint.toUpperCase();
+  } else {
+    // Five digits is a US ZIP and nothing else. Trying other countries on a mistyped US code would
+    // happily return a street in Finland, so only non-US formats are allowed to fall through.
+    const list = /^\d{5}$/.test(code) ? ['us'] : ZIP_ORDER;
+    for (const cc of list) {                                          // first country whose index knows the code wins
+      const hit = await tryZip(cc, code);
+      if (hit) return load(hit.lat, hit.lon, hit.name, hit.cc);
+    }
+  }
+  if (!/^\d{5}$/.test(code) && !ccHint) {
+    $('#loc').textContent = 'No match for ' + code.toUpperCase() + '. If it is not a US ZIP, add the country code \u2014 for example 10115 DE or M5V 2T6 CA.';
+    return;
+  }
+  if (detail) return failed('Could not look up that postal code.', detail, 'That code could not be looked up.');
+  failed('That ZIP or postal code could not be found. Try another one, or use \u201cUse my location\u201d.', '', 'That code was not found.');
 }
 
 /* ---------- RSS: builds a feed file from the current forecast ---------- */
@@ -458,12 +574,459 @@ function rss() {
   a.download = 'migraine-forecast.xml'; a.click();
 }
 
+/* ---------- Local resources: matched to the forecast location by coordinates ---------- */
+// Two levels of file: a small index (which counties exist, plus one general block per country) and one
+// file per county, fetched only when someone is actually in it. Both are cached, so the list still
+// opens with no connection, which is the state a lot of people using this are in.
+const inBox = (lat, lon, b) => b && lon >= b[0] && lon <= b[2] && lat >= b[1] && lat <= b[3];
+let RES = null, REGION = null, resFilter = '', resOpen = false, resPrev = '';
+// ttl is optional: the county a point sits in barely changes, the services mapped around it do,
+// so live lookups expire and get asked for again rather than being trusted forever.
+const readCache = (k, v, ttl) => { try { const c = JSON.parse(localStorage.getItem(k)); if (!c || !c.body) return null; if (v && c.body.version !== v) return null; if (ttl && c.t && Date.now() - c.t > ttl) return null; return c.body; } catch (e) {} return null; };
+const writeCache = (k, d) => { try { localStorage.setItem(k, JSON.stringify({body: d, t: Date.now()})); } catch (e) {} };
+async function getResJSON(path) {
+  const r = await fetch(path, {cache: 'no-cache'});
+  if (!r.ok) throw new Error(path + ' returned HTTP ' + r.status);
+  return r.json();
+}
+async function loadIndex() {
+  if (RES) return RES;
+  RES = readCache('residx') || await getResJSON('resources/index.json');
+  writeCache('residx', RES);
+  return RES;
+}
+async function loadRegion(entry) {
+  const key = 'resreg:' + entry.id;
+  const hit = readCache(key, entry.version);
+  if (hit) return hit;
+  const d = await getResJSON('resources/' + entry.file);
+  writeCache(key, d);
+  return d;
+}
+function matchRegion() {
+  const lat = D && D.lat, lon = D && D.lon;
+  if (typeof lat !== 'number' || !RES) return null;
+  return (RES.regions || []).find(x => inBox(lat, lon, x.bbox)) || null;
+}
+// A country block is the general fallback: emergency numbers, crisis lines, national disability and
+// headache organisations. No smaller regions, so the file stays a sensible size.
+function countryBlock(cc) {
+  const C = (RES && RES.countries) || {};
+  const code = cc || 'DEFAULT';
+  return {code: C[code] ? code : 'DEFAULT', data: C[code] || C.DEFAULT, generic: !C[code]};
+}
+const maps = q => 'https://maps.google.com/?q=' + encodeURIComponent(q);
+// One entry: name, then notes, address, hours, and buttons for anything actionable
+function resItem(x) {
+  const links = [];
+  if (x.phone) links.push(`<a class="tel" href="tel:${x.phone.replace(/[^0-9+]/g, '')}">\u260E ${esc(x.phone)}</a>`);
+  if (x.address) links.push(`<a href="${maps(x.name + ', ' + x.address)}" target="_blank" rel="noopener">\u25B8 Map</a>`);
+  if (x.url) links.push(`<a href="${esc(x.url)}" target="_blank" rel="noopener">\u2197 Website</a>`);
+  const tags = (x.tags || []).map(t => `<span class="tag">${esc(t.replace(/-/g, ' '))}</span>`).join('');
+  const hay = (x.name + ' ' + (x.notes || '') + ' ' + (x.address || '') + ' ' + (x.tags || []).join(' ')).toLowerCase();
+  if (resFilter && hay.indexOf(resFilter) < 0) return '';
+  const dist = typeof x.dist === 'number' ? `<span class="dist">${x.dist < 1 ? Math.round(x.dist * 1000) + ' m' : x.dist.toFixed(1) + ' km'} away</span>` : '';
+  return `<div class="r"><b>${esc(x.name)}</b>${dist}
+    ${x.notes ? `<div class="rn">${esc(x.notes)}</div>` : ''}
+    ${x.address ? `<div class="rn">${esc(x.address)}</div>` : ''}
+    ${x.hours ? `<div class="rn">${esc(x.hours)}</div>` : ''}
+    ${links.length ? `<div class="rl">${links.join('')}</div>` : ''}${tags ? `<div>${tags}</div>` : ''}</div>`;
+}
+
+/* ---------- Live lookup for the rest of the country ----------
+   There is no honest way to hand-write 3,143 county lists, so outside the counties that have one this
+   asks three free, keyless, CORS-open services for the answer instead:
+   1. FCC Census block API: coordinates in, county name, state and FIPS out. Official, no key, one call.
+   2. OpenStreetMap Overpass: food banks, social facilities and NGOs already mapped near the point.
+   3. Deep links: the national directories, pre-filled with the ZIP the visitor already gave us.
+   Results are cached by rounded coordinates so a second visit costs nothing, and every request is
+   user-initiated: nothing here fires until someone presses the button or reopens a cached panel. */
+let LIVE = null, LIVE_BUSY = false;
+const havKm = (la1, lo1, la2, lo2) => {
+  const R = 6371, r = Math.PI / 180;
+  const dLa = (la2 - la1) * r, dLo = (lo2 - lo1) * r;
+  const a = Math.sin(dLa / 2) ** 2 + Math.cos(la1 * r) * Math.cos(la2 * r) * Math.sin(dLo / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+};
+const coordKey = (lat, lon) => 'live:' + lat.toFixed(2) + ',' + lon.toFixed(2);
+async function findCounty(lat, lon) {
+  const key = 'cty:' + lat.toFixed(2) + ',' + lon.toFixed(2);
+  const hit = readCache(key, null, 90 * 24 * 36e5);
+  if (hit) return hit;
+  let out = null;
+  // FCC first: one request, CORS open, returns everything we need.
+  try {
+    const r = await fetch('https://geo.fcc.gov/api/census/area?lat=' + lat + '&lon=' + lon + '&format=json');
+    if (r.ok) {
+      const j = await r.json(), a = (j.results || [])[0];
+      if (a && a.county_name) out = {county: a.county_name, state: a.state_code, fips: a.county_fips};
+    }
+  } catch (e) {}
+  // TIGERweb is the Census Bureau's own boundary service, and also sends CORS headers.
+  if (!out) try {
+    const r = await fetch('https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/1/query?geometry=' + lon + ',' + lat + '&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=NAME,STATE&returnGeometry=false&f=json');
+    if (r.ok) {
+      const j = await r.json(), a = ((j.features || [])[0] || {}).attributes;
+      if (a && a.NAME) out = {county: a.NAME, state: '', fips: a.STATE || ''};
+    }
+  } catch (e) {}
+  if (out) writeCache(key, out);
+  return out;
+}
+async function nearbyServices(lat, lon, km) {
+  const key = 'osm:' + lat.toFixed(2) + ',' + lon.toFixed(2);
+  const hit = readCache(key, null, 14 * 24 * 36e5);
+  if (hit) return hit;
+  const q = '[out:json][timeout:25];(' +
+    'nwr(around:' + km * 1000 + ',' + lat + ',' + lon + ')[amenity=food_bank];' +
+    'nwr(around:' + km * 1000 + ',' + lat + ',' + lon + ')[social_facility];' +
+    'nwr(around:' + km * 1000 + ',' + lat + ',' + lon + ')[amenity=social_facility];' +
+    'nwr(around:' + km * 1000 + ',' + lat + ',' + lon + ')[office=ngo];' +
+    ');out center tags 80;';
+  // The main Overpass instance answers 502 when its workers are busy, which is often. Try it first, then
+  // the public mirror. One attempt each, twelve seconds apiece, so a busy endpoint cannot stall the panel long
+  // before the lighter fallback below takes over.
+  const ends = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
+  let r = null, lastErr = '';
+  for (const url of ends) {
+    try {
+      const ac = new AbortController(), tm = setTimeout(() => ac.abort(), 12000);
+      r = await fetch(url, {method: 'POST', signal: ac.signal, headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: 'data=' + encodeURIComponent(q)});
+      clearTimeout(tm);
+      if (r.ok) break;
+      lastErr = 'HTTP ' + r.status;
+      r = null;
+    } catch (e) { lastErr = String(e && e.name === 'AbortError' ? 'timed out' : e); r = null; }
+  }
+  if (!r) throw new Error('Overpass ' + lastErr);
+  const j = await r.json();
+  const seen = new Set(), items = [];
+  (j.elements || []).forEach(e => {
+    const t = e.tags || {}, name = t.name;
+    if (!name) return;
+    const la = e.lat != null ? e.lat : (e.center || {}).lat;
+    const lo = e.lon != null ? e.lon : (e.center || {}).lon;
+    if (typeof la !== 'number') return;
+    const d = havKm(lat, lon, la, lo);
+    if (d > km) return;
+    const k = name.toLowerCase();
+    if (seen.has(k)) return;
+    seen.add(k);
+    const addr = [t['addr:housenumber'], t['addr:street']].filter(Boolean).join(' ');
+    const city = [t['addr:city'], t['addr:state']].filter(Boolean).join(', ');
+    const kind = t.social_facility || t.amenity || t.office || 'service';
+    items.push({
+      name: name,
+      notes: t.opening_hours ? t.opening_hours + '.' : '',
+      address: addr ? addr + (city ? ', ' + city : '') : '',
+      phone: t.phone || t['contact:phone'] || '',
+      url: t.website || t['contact:website'] || '',
+      dist: d,
+      kind: String(kind).replace(/_/g, ' '),
+      tags: [String(kind).replace(/_/g, ' ')]
+    });
+  });
+  items.sort((a, b) => a.dist - b.dist);
+  const out = items.slice(0, 12);
+  writeCache(key, out);
+  return out;
+}
+// Overpass answers when its workers are free, which is not always. Nominatim is the lighter OpenStreetMap
+// search service and usually answers when Overpass will not, so it is the second port of call: it gives
+// names and addresses rather than opening hours, but an address with a map link still gets someone there.
+async function nearbyNominatim(lat, lon, km) {
+  const key = 'nom:' + lat.toFixed(2) + ',' + lon.toFixed(2);
+  const hit = readCache(key, null, 14 * 24 * 36e5);
+  if (hit) return hit;
+  const dLa = km / 111, dLo = km / (111 * Math.max(0.2, Math.cos(lat * Math.PI / 180)));
+  const box = [lon - dLo, lat - dLa, lon + dLo, lat + dLa].map(x => x.toFixed(4)).join(',');
+  const out = [], seen = new Set();
+  for (const term of ['food bank', 'social services', 'food pantry']) {
+    try {
+      const ac = new AbortController(), tm = setTimeout(() => ac.abort(), 12000);
+      const r = await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&bounded=1&viewbox=' +
+        box + '&q=' + encodeURIComponent(term), {signal: ac.signal, headers: {'Accept': 'application/json'}});
+      clearTimeout(tm);
+      if (!r.ok) continue;
+      const j = await r.json();
+      (j || []).forEach(x => {
+        const name = String(x.name || (x.display_name || '').split(',')[0]).trim();
+        if (!name || seen.has(name.toLowerCase())) return;
+        const la = +x.lat, lo = +x.lon;
+        if (!isFinite(la)) return;
+        seen.add(name.toLowerCase());
+        const addr = String(x.display_name || '').split(',').slice(1, 3).join(',').trim();
+        out.push({name: name, notes: '', address: addr, phone: '', url: '', dist: havKm(lat, lon, la, lo), kind: term, tags: [term, 'address only']});
+      });
+    } catch (e) {}
+    await new Promise(r => setTimeout(r, 1100));       // Nominatim asks for at most one request a second
+  }
+  out.sort((a, b) => a.dist - b.dist);
+  const res = out.slice(0, 12);
+  if (res.length) writeCache(key, res);
+  return res;
+}
+// The national directories, opened on the place the visitor already told us. No keys, no scraping.
+function deepLinks() {
+  const zip = /^\d{5}$/.test(LAST_ZIP) ? LAST_ZIP : '';
+  const parts = String((D && D.place) || '').split(',');
+  const city = parts[0].trim();
+  const st = (LIVE && LIVE.county && LIVE.county.state) || (parts[1] || '').trim();
+  const links = [];
+  if (zip) links.push({name: 'FindHelp.org', notes: 'Entered with ZIP ' + zip + '. Food, housing, transport, health and legal help, filtered by eligibility.', url: 'https://www.findhelp.org/search?q=' + encodeURIComponent(zip), tags: ['national directory']});
+  links.push({name: '211', notes: 'The national health and human services line. Dial 211 or search by ZIP for your local agency.', url: 'https://www.211.org/get-help', tags: ['national directory', 'phone']});
+  const slug = city && st ? String(st).toLowerCase() + '-' + String(city).toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, '') : '';
+  const fp = slug ? 'https://www.foodpantries.org/ci/' + slug : (zip ? 'https://www.foodpantries.org/zi/' + zip : '');
+  if (fp) links.push({name: 'FoodPantries.org', notes: 'Pantry addresses, hours and phone numbers near ' + (city || zip) + '.', url: fp, tags: ['food']});
+  links.push({name: 'NeedyMeds', notes: 'Patient assistance programmes, free and sliding-scale clinics, and drug discount cards.', url: 'https://www.needymeds.org/', tags: ['medication', 'national directory']});
+  links.push({name: 'Eldercare Locator', notes: 'The federal route to your local Area Agency on Aging: transport, meals, caregiver support.', url: 'https://eldercare.acl.gov/', tags: ['older adults', 'carer support']});
+  return links;
+}
+function drawLiveGroups(push) {
+  if (!LIVE) return;
+  if (LIVE.county) {
+    const c = LIVE.county;
+    push('Services mapped nearby \u2014 ' + (c.county || 'your area') + (LIVE.source === 'OpenStreetMap, addresses only' ? ' (addresses only)' : ''),
+      (LIVE.items || []).map(x => ({
+        name: x.name,
+        notes: x.notes || '',
+        address: x.address || '',
+        phone: x.phone,
+        url: x.url,
+        dist: x.dist,
+        tags: [x.kind]
+      })));
+    if (!(LIVE.items || []).length) push('Services mapped nearby', []);
+  }
+  push('Search wider \u2014 national directories', LIVE.links || []);
+}
+function drawResources() {
+  const box = $('#p-res');
+  if (!RES) return;
+  const has = typeof (D && D.lat) === 'number';
+  const cb = countryBlock(D && D.cc);
+  const place = cb.generic ? 'Your country' : cb.data.name;
+  const liveName = LIVE && LIVE.county ? LIVE.county.county + (LIVE.county.state ? ', ' + LIVE.county.state : '') : '';
+  const sub = REGION
+    ? esc(REGION.name)
+    : (has ? esc(liveName || place) + (LIVE && (LIVE.items || []).length ? ' \u2014 services nearby and national resources' : ' \u2014 national resources') : 'Choose a location to match local resources.');
+  const head = `<div class="rhead"><h2>Resources near you</h2><p>${sub}</p></div>
+    <div class="rbar"><button class="btn alt" id="resPrint" type="button">Print this list</button></div>
+    <input class="rsearch" id="resQ" type="search" placeholder="Filter by name, need or tag" aria-label="Filter resources" value="${esc(resFilter)}">`;
+  // Keep the order fixed: emergency first, then local county detail, then the rest of the national list.
+  // Anything already shown is skipped, so 211 never appears twice.
+  const groups = [], seen = new Set();
+  const push = (label, items) => {
+    const rows = [];
+    (items || []).forEach(x => {
+      const key = x.name + '|' + (x.phone || '');
+      if (seen.has(key)) return;
+      seen.add(key);
+      const h = resItem(x);
+      if (h) rows.push(h);
+    });
+    if (rows.length) groups.push(`<div class="rgroup"><h3>${esc(label)}</h3>${rows.join('')}</div>`);
+  };
+  const cg = cb.data.groups || [];
+  if (cg.length) push(cg[0].label, cg[0].items);
+  if (REGION) (REGION.categories || []).forEach(c => push(c.label, c.items));
+  drawLiveGroups(push);
+  cg.slice(1).forEach(g => push(g.label, g.items));
+  let body = groups.join('');
+  if (!body) body = '<p class="rempty">Nothing matches that filter.</p>';
+  if (LIVE_BUSY) body += '<p class="rload">Looking up your county and what is mapped nearby\u2026</p>';
+  if (!REGION && has && LIVE && LIVE.county && !(LIVE.items || []).length) body += '<p class="rload"><a href="#" id="resRetry">Look again</a> \u2014 the map services are busy right now.</p>';
+  if (!REGION && has && LIVE && LIVE.county && !(LIVE.items || []).length) body += `<p class="rnote">No food banks or social services are mapped within ${LIVE.km} km of this point in OpenStreetMap. The national directories above search wider, and 211 will name the local agency for your address.</p>`;
+  const foot = `<p class="rempty" style="margin-top:16px;font-size:.8rem">${esc(REGION && REGION.source ? REGION.source : 'National lists compiled November 2026. Verify hours and eligibility by phone before travelling.')}</p>`;
+  box.innerHTML = head + body + foot;
+  const q = $('#resQ');
+  if (q) q.oninput = e => {
+    resFilter = e.target.value.toLowerCase().trim();
+    drawResources();
+    const n = $('#resQ');
+    if (n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); }
+  };
+  const pr = $('#resPrint');
+  if (pr) pr.onclick = () => window.print();
+  const rt = $('#resRetry');
+  if (rt) rt.onclick = e => {
+    e.preventDefault();
+    if (!D || typeof D.lat !== 'number') return;
+    try { localStorage.removeItem('osm:' + D.lat.toFixed(2) + ',' + D.lon.toFixed(2)); localStorage.removeItem('nom:' + D.lat.toFixed(2) + ',' + D.lon.toFixed(2)); } catch (x) {}
+    if (LIVE) { LIVE.items = []; LIVE.county = LIVE.county || null; }
+    loadLive(D.lat, D.lon);
+  };
+}
+async function loadLive(lat, lon) {
+  LIVE_BUSY = true;
+  LIVE = LIVE || {};
+  if (!LIVE.links) LIVE.links = deepLinks();
+  drawResources();
+  try {
+    if (!LIVE.county) LIVE.county = await findCounty(lat, lon);
+    LIVE.km = 8;
+    LIVE.source = 'OpenStreetMap';
+    try {
+      LIVE.items = await nearbyServices(lat, lon, LIVE.km);
+    } catch (e) {                                  // Overpass is a shared service and does rate-limit; try once more further out
+      LIVE.km = 16;
+      try { LIVE.items = await nearbyServices(lat, lon, LIVE.km); } catch (e2) { LIVE.items = []; }
+    }
+    if (!(LIVE.items || []).length) {              // nothing mapped, or Overpass too busy: ask the lighter service
+      LIVE.items = await nearbyNominatim(lat, lon, 12);
+      LIVE.source = 'OpenStreetMap, addresses only';
+      LIVE.km = 12;
+    }
+    LIVE.at = Date.now();
+  } catch (e) {
+    LIVE.items = LIVE.items || [];
+  }
+  LIVE.links = deepLinks();                        // rebuild now the county and state are known
+  LIVE_BUSY = false;
+  drawResources();
+}
+async function openResources() {
+  const box = $('#p-res');
+  resOpen = true;
+  box.classList.remove('hide');
+  box.innerHTML = '<p class="rempty">Loading local resources\u2026</p>';
+  try {
+    await loadIndex();
+    const entry = matchRegion();
+    REGION = entry ? await loadRegion(entry) : null;
+    drawResources();
+    // Only the US gets the live county treatment: the Census services do not answer for anywhere else.
+    if (!REGION && D && D.cc === 'US' && typeof D.lat === 'number') loadLive(D.lat, D.lon);
+  } catch (e) {
+    box.innerHTML = `<p class="rempty">Could not load the resource list (${esc(e.message)}). Check your connection and try again.</p>`;
+  }
+  box.scrollIntoView({behavior: reduce.matches ? 'auto' : 'smooth', block: 'start'});
+}
+// Printing should put every entry on paper, not just what the filter left on screen
+addEventListener('beforeprint', () => {
+  document.body.dataset.print = resOpen ? 'res' : (supOpen ? 'sup' : '');
+  if (!resOpen) return;
+  resPrev = resFilter;
+  if (resFilter) { resFilter = ''; drawResources(); }
+});
+addEventListener('afterprint', () => {
+  delete document.body.dataset.print;
+  if (!resOpen) return;
+  if (resPrev) { resFilter = resPrev; resPrev = ''; drawResources(); }
+});
+
+/* ---------- Neuralgia and migraine support ---------- */
+// Organisations that maintain an actual location finder, so the advice ends somewhere local.
+// Phones are only listed where the organisation publishes one on its own site.
+const ORGS = [
+  {cc:'US', name:'Facial Pain Association', live:'https://facialpain.org/support-groups/',
+   notes:'Trigeminal, occipital and glossopharyngeal neuralgia. A support group finder covering in-person and virtual groups by state, plus a searchable specialist directory.',
+   links:[['Support group finder','https://facialpain.org/support-groups/'],['Find a doctor','https://facialpain.org/find-a-doctor/']],
+   tags:['trigeminal','occipital','glossopharyngeal']},
+  {cc:'US', name:'American Migraine Foundation', live:'https://americanmigrainefoundation.org/resource-library/move-against-migraine/',
+   notes:'Move Against Migraine runs a patient community and connects people with headache specialists by region. Useful if weather-triggered migraine sits alongside occipital neuralgia.',
+   links:[['Move Against Migraine','https://americanmigrainefoundation.org/resource-library/move-against-migraine/'],['Find a doctor','https://americanmigrainefoundation.org/find-a-doctor/']],
+   tags:['migraine','specialists']},
+  {cc:'US', name:'U.S. Pain Foundation \u2014 Pain Connection', live:'https://uspainfoundation.org/pain-connection/',
+   notes:'Free, facilitator-led support groups listed state by state, in person and online. Covers chronic and neuropathic pain more broadly, including postherpetic and peripheral nerve pain.',
+   phone:'800-910-2462',
+   links:[['Support groups','https://uspainfoundation.org/pain-connection/']],
+   tags:['chronic pain','neuropathic']},
+  {cc:'US', name:'Foundation for Peripheral Neuropathy', live:'https://www.foundationforpn.org/support-groups/',
+   notes:'Searchable map of local support groups across the US and Canada, for nerve pain in the hands, feet and limbs that cold snaps or humidity swings make worse.',
+   phone:'847-883-9942',
+   links:[['Support group map','https://www.foundationforpn.org/support-groups/']],
+   tags:['peripheral','canada too']},
+  {cc:'GB', name:'Trigeminal Neuralgia Association UK', live:'https://www.tna.org.uk/regional-support-group/',
+   notes:'Regional support groups across the UK, run as a member service, plus a helpline for newly diagnosed people and their families.',
+   phone:'0800 999 1899',
+   links:[['Regional support groups','https://www.tna.org.uk/regional-support-group/'],['Helpline and support','https://www.tna.org.uk/']],
+   tags:['uk','trigeminal']},
+  {cc:'*', name:'International Headache Society', live:'https://ihs-headache.org/',
+   notes:'Lists the national headache societies that treat trigeminal neuralgia and migraine, country by country. The fastest route to a specialist outside the US and UK.',
+   links:[['Find your national society','https://ihs-headache.org/']], tags:['international','specialists']},
+  {cc:'*', name:'Find A Helpline', live:'https://findahelpline.com/',
+   notes:'Free crisis and emotional support lines in over 130 countries, filtered by what you are going through. For the days when pain and isolation get on top of you.',
+   links:[['Open Find A Helpline','https://findahelpline.com/']], tags:['international','crisis']}
+];
+// Practical steps for a forecast front. Ordered the way a flare actually builds.
+const TIPS = [
+  {t:'Cover the face and ears before you go out', b:'A sudden breeze or a drop in temperature is a physical trigger for facial and occipital neuralgia, not just a comfort issue. A soft scarf, a wrap-around balaclava or ear coverings worn before stepping outside does more than putting them on once the pain starts.'},
+  {t:'Have the acute plan ready before the pressure drops', b:'Falling pressure usually arrives ahead of a storm, so review the plan with your doctor the day before: rescue medication to hand, topical lidocaine patches within reach, and a note of what worked last time. The app shows roughly when the drop lands.'},
+  {t:'Steady the indoor microclimate', b:'Rapid shifts between freezing outdoor air and dry, overheated rooms provoke nerve pain. Keep humidity balanced, and avoid sitting directly in front of air conditioning vents or space heaters \u2014 the draught matters more than the room temperature.'},
+  {t:'Work out your own lead time', b:'Not everyone flares as the front arrives. Some people react 12 to 24 hours before it moves in, others the day after. Note the time a flare starts against the forecast in the Hourly tab, and after a few you will know your own lag \u2014 which makes the next forecast far more useful to you.'},
+  {t:'Lower the other triggers on a high-risk day', b:'When weather risk is already high, the controllable triggers decide whether you stay under your pain threshold. Water, regular meals, avoiding bright glare, and keeping neck and shoulder tension down all buy room.'}
+];
+let supOpen = false;
+// The hour in the next 48 that scores highest, so the tips can point at a real time instead of a vague warning
+function worstWindow() {
+  if (!D || !M || !M.sc) return null;
+  const end = Math.min(M.sc.length, M.b + 48);
+  let best = M.b;
+  for (let i = M.b; i < end; i++) if (M.sc[i].r > M.sc[best].r) best = i;
+  const t = D.hourly.time[best];
+  const day = new Date(t).toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
+  return {p: pct(M.sc[best].r), day, hour: hr(t), t};
+}
+function orgItem(x, cc) {
+  const links = [];
+  if (x.phone) links.push(`<a class="tel" href="tel:${x.phone.replace(/[^0-9+]/g, '')}">\u260E ${esc(x.phone)}</a>`);
+  (x.links || []).forEach(([label, url]) => links.push(`<a href="${esc(url)}" target="_blank" rel="noopener">\u2197 ${esc(label)}</a>`));
+  const tags = (x.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
+  return `<div class="r"><b>${esc(x.name)}</b>
+    <div class="rn">${esc(x.notes)}</div>
+    ${links.length ? `<div class="rl">${links.join('')}</div>` : ''}${tags ? `<div>${tags}</div>` : ''}</div>`;
+}
+function drawSupport() {
+  const box = $('#p-sup');
+  const cc = (D && D.cc || '').toUpperCase();
+  const w = worstWindow();
+  let head = `<div class="rhead"><h2>Neuralgia and migraine support</h2>
+    <p>Support groups, specialists and what helps when a front is coming${D && D.place ? ` \u2014 ${esc(D.place)}` : ''}.</p></div>`;
+
+  // Point the tips at the actual worst window rather than a generic warning
+  let risk;
+  if (w) {
+    const l = lvl(w.p);
+    risk = `<div class="riskline"><b>Highest risk in the next 48 hours: ${w.p}% ${esc(l[1].toLowerCase())}, ${esc(w.day)} around ${w.hour}.</b>
+      Flares often start 12 to 24 hours before a front moves in, so that window is worth preparing for the day before. The steps below are ordered the way a flare usually builds.</div>`;
+  } else {
+    risk = `<div class="riskline"><b>Load a forecast above to see which window matters most.</b>
+      The steps below apply to any forecast drop in barometric pressure, strong wind or sharp temperature swing.</div>`;
+  }
+
+  const local = ORGS.filter(o => o.cc === cc);
+  const intl = ORGS.filter(o => o.cc === '*').concat(ORGS.filter(o => o.cc !== cc && o.cc !== '*'));
+  const isUS = cc === 'US';
+
+  let body = `<div class="rgroup"><h3>Find a support group or specialist</h3>`
+    + (local.length ? local.map(o => orgItem(o, cc)).join('')
+       : `<p class="rempty">No country-specific listing here yet for ${cc ? esc(cc) : 'this location'}. The international entries below cover most of the world.</p>`)
+    + `</div>`;
+  body += `<div class="rgroup"><h3>${isUS ? 'Also worth a call' : 'International'}</h3>`
+    + intl.map(o => orgItem(o, cc)).join('') + `</div>`;
+
+  body += `<div class="rgroup"><h3>When a front is coming</h3>`
+    + risk + TIPS.map((x, i) => `<div class="tip"><div class="n">${i + 1}</div><div><b>${esc(x.t)}</b><p>${esc(x.b)}</p></div></div>`).join('')
+    + `</div>`;
+
+  body += `<p class="rnote">These are practical suggestions and signposts to organisations, not medical advice. Talk to your own doctor about rescue medication and any change to your plan.</p>`;
+  box.innerHTML = head + body;
+}
+function openSupport() {
+  const box = $('#p-sup');
+  supOpen = true;
+  box.classList.remove('hide');
+  drawSupport();
+  box.scrollIntoView({behavior: reduce.matches ? 'auto' : 'smooth', block: 'start'});
+}
+
 /* ---------- Events ---------- */
 $('#geo').onclick = () => navigator.geolocation
   ? navigator.geolocation.getCurrentPosition(p => load(+p.coords.latitude.toFixed(3), +p.coords.longitude.toFixed(3), 'Your location'),
       () => $('#loc').textContent = 'Location blocked. Enter your ZIP code instead.')
   : $('#loc').textContent = 'Location is not available here. Enter your ZIP code instead.';
-$('#zipForm').onsubmit = e => { e.preventDefault(); byZip($('#zip').value.trim()); };
+$('#zipForm').onsubmit = e => { e.preventDefault(); byPostal($('#zip').value.trim()); };
 $('#sens').oninput = e => {
   S = +e.target.value; $('#sensName').textContent = SENS[S];
   try { localStorage.setItem('sens', S); } catch (x) {}
@@ -472,11 +1035,16 @@ $('#sens').oninput = e => {
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
   ['today', 'hourly', 'days'].forEach(t => $('#p-' + t).classList.toggle('hide', t !== b.dataset.t));
+  if (!$('#p-res').classList.contains('hide') && RES) drawResources();   // refresh the county match for the new data
 });
+$('#resBtn').onclick = openResources;
+$('#supBtn').onclick = openSupport;
 $('#rss').onclick = rss;
 
 /* ---------- Start: restore saved sensitivity and location ---------- */
 try {
+  const zs = localStorage.getItem('zip');
+  if (zs) LAST_ZIP = zs;
   const sv = localStorage.getItem('sens');
   S = sv === null ? 1 : +sv;
   if (!(S >= 0 && S <= 2)) S = 1;
@@ -484,7 +1052,7 @@ try {
 } catch (e) {}
 (() => {
   const z = new URLSearchParams(location.search).get('zip');           // e.g. ?zip=98101
-  if (z) { skeleton(); return byZip(z); }
+  if (z) { skeleton(); return byPostal(z); }
   let s = null;
   try { s = JSON.parse(localStorage.getItem('loc')); } catch (e) {}
   if (s) {
@@ -501,3 +1069,1765 @@ try {
 </script>
 </body>
 </html>
+
+{
+ "version": 2,
+ "updated": "2026-11-16",
+ "note": "One file per county, kept out of the main page so it stays small. Countries hold general national resources only; a postal code is matched to a county by coordinates.",
+ "regions": [
+  {
+   "id": "thurston-wa",
+   "name": "Thurston County, Washington",
+   "country": "US",
+   "bbox": [
+    -123.22,
+    46.86,
+    -122.24,
+    47.2
+   ],
+   "file": "thurston-wa.json",
+   "version": 2
+  }
+ ],
+ "countries": {
+  "US": {
+   "name": "United States",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Emergency: call or text 911",
+       "phone": "911",
+       "notes": "Immediate danger or a medical emergency.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "988 Suicide & Crisis Lifeline",
+       "phone": "988",
+       "url": "https://988lifeline.org",
+       "notes": "Call or text 988. Free, confidential, 24/7. For anyone in emotional distress, not only suicidal thoughts.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      },
+      {
+       "name": "211",
+       "phone": "211",
+       "url": "https://www.211.org",
+       "notes": "The United States' master directory of local help: rent, utilities, food, transport, caregiving. Answers vary by area.",
+       "tags": [
+        "directory",
+        "benefits"
+       ]
+      },
+      {
+       "name": "Crisis Text Line",
+       "phone": "741741",
+       "url": "https://www.crisistextline.org",
+       "notes": "Text HOME to 741741 to reach a crisis counsellor by text.",
+       "tags": [
+        "crisis",
+        "text"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "ADA National Network",
+       "phone": "1-800-949-4232",
+       "url": "https://adata.org",
+       "notes": "Free advice on disability rights and accommodations, including at work and in housing.",
+       "tags": [
+        "rights",
+        "advocacy"
+       ]
+      },
+      {
+       "name": "Eldercare Locator",
+       "phone": "1-800-677-1116",
+       "url": "https://eldercare.acl.gov",
+       "notes": "Finds your Area Agency on Aging: in-home help, caregiver support, meals.",
+       "tags": [
+        "caregiving",
+        "aging"
+       ]
+      },
+      {
+       "name": "Disaster Distress Helpline",
+       "phone": "1-800-985-5990",
+       "url": "https://www.samhsa.gov/find-help/disaster-distress-helpline",
+       "notes": "24/7 counselling for distress after a disaster or emergency.",
+       "tags": [
+        "crisis"
+       ]
+      },
+      {
+       "name": "American Migraine Foundation",
+       "phone": "https://americanmigrainefoundation.org",
+       "url": "https://americanmigrainefoundation.org",
+       "notes": "Find a headache specialist, patient guides, and a doctor locator.",
+       "tags": [
+        "migraine",
+        "medical"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "CA": {
+   "name": "Canada",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Emergency: call 911",
+       "phone": "911",
+       "notes": "Police, fire, ambulance.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "9-8-8 Suicide Crisis Helpline",
+       "phone": "988",
+       "url": "https://988.ca",
+       "notes": "Call or text 988. 24/7, English and French.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      },
+      {
+       "name": "211 Canada",
+       "phone": "211",
+       "url": "https://211.ca",
+       "notes": "Community services directory: food, housing, legal help, home care. Most provinces.",
+       "tags": [
+        "directory",
+        "benefits"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "Migraine Canada",
+       "phone": "https://migrainecanada.org",
+       "url": "https://migrainecanada.org",
+       "notes": "Patient resources, specialist finder, and workplace guidance.",
+       "tags": [
+        "migraine",
+        "medical"
+       ]
+      },
+      {
+       "name": "Service Canada",
+       "phone": "1-800-622-6232",
+       "url": "https://www.canada.ca/en/employment-social-development.html",
+       "notes": "Federal benefits including disability, CPP, and Old Age Security.",
+       "tags": [
+        "benefits"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "GB": {
+   "name": "United Kingdom",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Emergency: call 999 or 112",
+       "phone": "999",
+       "notes": "Fire, police, ambulance, coastguard. 112 also works.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "NHS 111",
+       "phone": "111",
+       "url": "https://111.nhs.uk",
+       "notes": "Urgent medical help that is not a 999 emergency, 24/7.",
+       "tags": [
+        "medical"
+       ]
+      },
+      {
+       "name": "Samaritans",
+       "phone": "116 123",
+       "url": "https://www.samaritans.org",
+       "notes": "Free, 24/7 listening line from any phone. Also email jo@samaritans.org.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "The Migraine Trust",
+       "phone": "https://migrainetrust.org",
+       "url": "https://migrainetrust.org",
+       "notes": "Information line, specialist directory, and benefits guidance for migraine.",
+       "tags": [
+        "migraine",
+        "medical"
+       ]
+      },
+      {
+       "name": "Scope",
+       "phone": "0808 800 3333",
+       "url": "https://www.scope.org.uk",
+       "notes": "Disability equality charity: rights, benefits checks, and support line.",
+       "tags": [
+        "rights",
+        "advocacy"
+       ]
+      },
+      {
+       "name": "Turn2us",
+       "phone": "https://www.turn2us.org.uk",
+       "url": "https://www.turn2us.org.uk",
+       "notes": "Benefits calculator and grants search for people on low income or disabled.",
+       "tags": [
+        "benefits"
+       ]
+      },
+      {
+       "name": "Adult social care (council)",
+       "phone": "https://www.gov.uk/apply-needs-assessment-social-services",
+       "url": "https://www.gov.uk/apply-needs-assessment-social-services",
+       "notes": "Request a free care needs assessment from your local council.",
+       "tags": [
+        "caregiving"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "IE": {
+   "name": "Ireland",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Emergency: call 999 or 112",
+       "phone": "999",
+       "notes": "Gardaí, fire, ambulance. 112 also works.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "Samaritans Ireland",
+       "phone": "116 123",
+       "url": "https://www.samaritans.org/ireland",
+       "notes": "Free, 24/7 listening line.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      },
+      {
+       "name": "Pieta House",
+       "phone": "1800 247 247",
+       "url": "https://www.pieta.ie",
+       "notes": "Free 24/7 crisis helpline; text HELP to 51444.",
+       "tags": [
+        "crisis"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "Migraine Association of Ireland",
+       "phone": "01 797 9685",
+       "url": "https://www.migraine.ie",
+       "notes": "Information line, support groups, and workplace guidance.",
+       "tags": [
+        "migraine",
+        "medical"
+       ]
+      },
+      {
+       "name": "Citizens Information",
+       "phone": "0818 07 4000",
+       "url": "https://www.citizensinformation.ie",
+       "notes": "Free, impartial advice on social welfare, health and disability entitlements.",
+       "tags": [
+        "benefits",
+        "rights"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "AU": {
+   "name": "Australia",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Emergency: call 000",
+       "phone": "000",
+       "notes": "Police, fire, ambulance.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "Lifeline",
+       "phone": "13 11 14",
+       "url": "https://www.lifeline.org.au",
+       "notes": "24/7 crisis support; text 0477 13 11 14.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      },
+      {
+       "name": "healthdirect",
+       "phone": "1800 022 222",
+       "url": "https://www.healthdirect.gov.au",
+       "notes": "24/7 nurse advice line.",
+       "tags": [
+        "medical"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "Disability Gateway",
+       "phone": "1800 643 787",
+       "url": "https://www.disabilitygateway.gov.au",
+       "notes": "Government information and referrals for people with disability.",
+       "tags": [
+        "benefits",
+        "directory"
+       ]
+      },
+      {
+       "name": "Headache Australia",
+       "phone": "https://headacheaustralia.org.au",
+       "url": "https://headacheaustralia.org.au",
+       "notes": "Migraine and headache information, run by the Brain Foundation.",
+       "tags": [
+        "migraine",
+        "medical"
+       ]
+      },
+      {
+       "name": "My Aged Care",
+       "phone": "1800 200 422",
+       "url": "https://www.myagedcare.gov.au",
+       "notes": "Assessments and services for older people needing help at home.",
+       "tags": [
+        "caregiving"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "NZ": {
+   "name": "New Zealand",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Emergency: call 111",
+       "phone": "111",
+       "notes": "Police, fire, ambulance.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "1737",
+       "phone": "1737",
+       "url": "https://1737.org.nz",
+       "notes": "Call or text 1737 to talk to a trained counsellor, 24/7.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      },
+      {
+       "name": "Healthline",
+       "phone": "0800 611 116",
+       "url": "https://www.health.govt.nz",
+       "notes": "Free 24/7 health advice from registered nurses.",
+       "tags": [
+        "medical"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "Work and Income",
+       "phone": "0800 559 009",
+       "url": "https://www.workandincome.govt.nz",
+       "notes": "Disability Allowance, Supported Living Payment, and home help.",
+       "tags": [
+        "benefits"
+       ]
+      },
+      {
+       "name": "Migraine Foundation Aotearoa NZ",
+       "phone": "https://migrainefoundation.org.nz",
+       "url": "https://migrainefoundation.org.nz",
+       "notes": "Patient support and information.",
+       "tags": [
+        "migraine",
+        "medical"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "DE": {
+   "name": "Germany",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Notruf: 112",
+       "phone": "112",
+       "notes": "Feuerwehr und Rettungsdienst. 110 for police.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "Telefonseelsorge",
+       "phone": "0800 111 0 111",
+       "url": "https://www.telefonseelsorge.de",
+       "notes": "Free, 24/7. Also 0800 111 0 222 and 116 123.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      },
+      {
+       "name": "Ärztlicher Bereitschaftsdienst",
+       "phone": "116117",
+       "url": "https://www.116117.de",
+       "notes": "Out-of-hours medical care that is not a 112 emergency.",
+       "tags": [
+        "medical"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "EUTB – Ergänzende unabhängige Teilhabeberatung",
+       "phone": "https://www.teilhabeberatung.de",
+       "url": "https://www.teilhabeberatung.de",
+       "notes": "Free, independent advice on disability participation and benefits.",
+       "tags": [
+        "advocacy",
+        "benefits"
+       ]
+      },
+      {
+       "name": "Pflegestützpunkt",
+       "phone": "https://www.pflegestuetzpunkte.de",
+       "url": "https://www.pflegestuetzpunkte.de",
+       "notes": "Local care advice centres: Pflegegrad, home help, respite.",
+       "tags": [
+        "caregiving"
+       ]
+      },
+      {
+       "name": "DMKG – Deutsche Migräne- und Kopfschmerzgesellschaft",
+       "phone": "https://www.dmkg.de",
+       "url": "https://www.dmkg.de",
+       "notes": "Headache specialists and patient information.",
+       "tags": [
+        "migraine",
+        "medical"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "FR": {
+   "name": "France",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Urgences : 112 ou 15 (SAMU)",
+       "phone": "112",
+       "notes": "112 works everywhere in the EU. 15 for SAMU, 18 for fire, 17 for police.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "3114",
+       "phone": "3114",
+       "url": "https://3114.fr",
+       "notes": "Numéro national de prévention du suicide. 24/7, free.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "Mon Parcours Handicap",
+       "phone": "https://www.monparcourshandicap.gouv.fr",
+       "url": "https://www.monparcourshandicap.gouv.fr",
+       "notes": "Official portal: MDPH, AAH, RQTH, and local services.",
+       "tags": [
+        "benefits",
+        "rights"
+       ]
+      },
+      {
+       "name": "MDPH (Maison départementale)",
+       "phone": "https://www.monparcourshandicap.gouv.fr",
+       "url": "https://www.monparcourshandicap.gouv.fr",
+       "notes": "Your departmental disability office: assessments and allowances.",
+       "tags": [
+        "benefits"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "ES": {
+   "name": "Spain",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Emergencias: 112",
+       "phone": "112",
+       "notes": "Works across Spain and the EU.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "024",
+       "phone": "024",
+       "url": "https://www.sanidad.gob.es/linea024",
+       "notes": "Línea de atención a la conducta suicida. 24/7, free.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "CERMI",
+       "phone": "https://cermi.es",
+       "url": "https://cermi.es",
+       "notes": "Confederation of disability organisations; directory of local services.",
+       "tags": [
+        "advocacy",
+        "directory"
+       ]
+      },
+      {
+       "name": "060 – Administración General del Estado",
+       "phone": "060",
+       "url": "https://administracion.gob.es",
+       "notes": "Benefits, dependency assessment, and social services information.",
+       "tags": [
+        "benefits"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "IT": {
+   "name": "Italy",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Emergenza: 112",
+       "phone": "112",
+       "notes": "Numero unico di emergenza in most regions.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "Telefono Amico",
+       "phone": "02 2327 2327",
+       "url": "https://www.telefonoamico.it",
+       "notes": "Ascolto 24/7 per chi è in difficoltà.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "INPS",
+       "phone": "06164164",
+       "url": "https://www.inps.it",
+       "notes": "Invalidità civile, indennità di accompagnamento, and disability benefits.",
+       "tags": [
+        "benefits"
+       ]
+      },
+      {
+       "name": "ANMIC",
+       "phone": "https://www.anmic.it",
+       "url": "https://www.anmic.it",
+       "notes": "Disability association offering rights and benefits guidance.",
+       "tags": [
+        "advocacy"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "NL": {
+   "name": "Netherlands",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Noodgeval: 112",
+       "phone": "112",
+       "notes": "Politie, brandweer, ambulance.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "113 Zelfmoordpreventie",
+       "phone": "113",
+       "url": "https://www.113.nl",
+       "notes": "Bel 113 of 0800-0113. 24/7, gratis.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      },
+      {
+       "name": "Huisartsenpost",
+       "phone": "https://www.zorgkaartnederland.nl",
+       "url": "https://www.zorgkaartnederland.nl",
+       "notes": "Out-of-hours GP care; your regional post's number is on your GP's website.",
+       "tags": [
+        "medical"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "Regelhulp",
+       "phone": "https://www.regelhulp.nl",
+       "url": "https://www.regelhulp.nl",
+       "notes": "Government route planner for care, disability and benefit support.",
+       "tags": [
+        "benefits",
+        "directory"
+       ]
+      },
+      {
+       "name": "Hersenstichting",
+       "phone": "https://www.hersenstichting.nl",
+       "url": "https://www.hersenstichting.nl",
+       "notes": "Brain and headache information, including migraine.",
+       "tags": [
+        "migraine",
+        "medical"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "BE": {
+   "name": "Belgium",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Urgence : 112",
+       "phone": "112",
+       "notes": "Police 101. Ambulance and fire 112.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "Centre de Prévention du Suicide / Zelfmoordlijn",
+       "phone": "1813",
+       "url": "https://www.preventionsuicide.be",
+       "notes": "Free and anonymous, 24/7.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "Handicap.be",
+       "phone": "https://handicap.socialsecurity.be",
+       "url": "https://handicap.socialsecurity.be",
+       "notes": "Federal disability benefits and recognition information.",
+       "tags": [
+        "benefits"
+       ]
+      },
+      {
+       "name": "Mutualité / ziekenfonds",
+       "phone": "https://www.mutualite.be",
+       "url": "https://www.mutualite.be",
+       "notes": "Health insurance fund: reimbursements and home-care services.",
+       "tags": [
+        "medical",
+        "caregiving"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "SE": {
+   "name": "Sweden",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Nödfall: 112",
+       "phone": "112",
+       "notes": "Ambulance, fire and police.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "Mind Självmordslinjen",
+       "phone": "90101",
+       "url": "https://mind.se",
+       "notes": "Chat and phone, 24/7, in Swedish.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      },
+      {
+       "name": "1177 Vårdguiden",
+       "phone": "1177",
+       "url": "https://www.1177.se",
+       "notes": "Healthcare advice and guidance, 24/7.",
+       "tags": [
+        "medical"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "Försäkringskassan",
+       "phone": "020 524 524",
+       "url": "https://www.forsakringskassan.se",
+       "notes": "Sickness and disability benefits.",
+       "tags": [
+        "benefits"
+       ]
+      },
+      {
+       "name": "Funktionsrätt Sverige",
+       "phone": "https://funktionsratt.se",
+       "url": "https://funktionsratt.se",
+       "notes": "Disability rights umbrella organisation.",
+       "tags": [
+        "advocacy"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "NO": {
+   "name": "Norway",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Nødnummer: 113",
+       "phone": "113",
+       "notes": "Medical. 110 fire, 112 police.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "Mental Helse",
+       "phone": "116 123",
+       "url": "https://mentalhelse.no",
+       "notes": "24/7, free.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      },
+      {
+       "name": "Legevakt",
+       "phone": "116117",
+       "url": "https://www.helsenorge.no",
+       "notes": "Out-of-hours medical help.",
+       "tags": [
+        "medical"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "NAV",
+       "phone": "https://www.nav.no",
+       "url": "https://www.nav.no",
+       "notes": "Welfare, disability benefit, and home services.",
+       "tags": [
+        "benefits"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "DK": {
+   "name": "Denmark",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Emergency: 112",
+       "phone": "112",
+       "notes": "Police, fire, ambulance.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "Livslinien",
+       "phone": "70 201 201",
+       "url": "https://www.livslinien.dk",
+       "notes": "Crisis line, 24/7. Also chat and text on 7877.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      },
+      {
+       "name": "Lægevagten",
+       "phone": "1813",
+       "url": "https://www.sundhed.dk",
+       "notes": "Out-of-hours medical care in most regions.",
+       "tags": [
+        "medical"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "Borgerservice / Kommune",
+       "phone": "https://www.borger.dk",
+       "url": "https://www.borger.dk",
+       "notes": "Municipal help: disability, care, and benefits.",
+       "tags": [
+        "benefits"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "FI": {
+   "name": "Finland",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Hätänumero: 112",
+       "phone": "112",
+       "notes": "Ambulance, fire, police.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "MIELI",
+       "phone": "09 2525 0111",
+       "url": "https://mieli.fi",
+       "notes": "Crisis helpline in Finnish, 24/7; Swedish line 09 2525 0112.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "Kela",
+       "phone": "020 692 204",
+       "url": "https://www.kela.fi",
+       "notes": "Social security: disability allowance and care support.",
+       "tags": [
+        "benefits"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "PL": {
+   "name": "Poland",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Numer alarmowy: 112",
+       "phone": "112",
+       "notes": "Pogotowie, straż, policja.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "116 123",
+       "phone": "116 123",
+       "url": "https://116sos.pl",
+       "notes": "Kryzysowy telefon zaufania, 24/7.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "ZUS",
+       "phone": "https://www.zus.pl",
+       "url": "https://www.zus.pl",
+       "notes": "Renta chorobowa and disability pensions.",
+       "tags": [
+        "benefits"
+       ]
+      },
+      {
+       "name": "PFRON",
+       "phone": "https://www.pfron.org.pl",
+       "url": "https://www.pfron.org.pl",
+       "notes": "State disability fund: equipment and rehabilitation support.",
+       "tags": [
+        "benefits",
+        "equipment"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "CH": {
+   "name": "Switzerland",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Notruf: 144",
+       "phone": "144",
+       "notes": "Ambulance. 117 police, 118 fire. 112 also works.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "Die Dargebotene Hand / La Main Tendue",
+       "phone": "143",
+       "url": "https://www.143.ch",
+       "notes": "24/7, free, anonymous.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "Pro Infirmis",
+       "phone": "https://www.proinfirmis.ch",
+       "url": "https://www.proinfirmis.ch",
+       "notes": "Disability counselling and benefits advice across Switzerland.",
+       "tags": [
+        "advocacy",
+        "benefits"
+       ]
+      },
+      {
+       "name": "IV-Stelle",
+       "phone": "https://www.ahv-iv.ch",
+       "url": "https://www.ahv-iv.ch",
+       "notes": "Disability insurance (Invalidenversicherung).",
+       "tags": [
+        "benefits"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "AT": {
+   "name": "Austria",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Notruf: 144",
+       "phone": "144",
+       "notes": "Rettung. 112 works across the EU.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "Telefonseelsorge",
+       "phone": "142",
+       "url": "https://www.telefonseelsorge.at",
+       "notes": "24/7, free.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "Sozialministeriumservice",
+       "phone": "https://www.sozialministeriumservice.at",
+       "url": "https://www.sozialministeriumservice.at",
+       "notes": "Disability benefits and Pflegegeld.",
+       "tags": [
+        "benefits"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "PT": {
+   "name": "Portugal",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Emergência: 112",
+       "phone": "112",
+       "notes": "INEM, bombeiros, PSP/GNR.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "SNS 24",
+       "phone": "808 24 24 24",
+       "url": "https://www.sns24.gov.pt",
+       "notes": "Saúde e aconselhamento, 24/7.",
+       "tags": [
+        "medical"
+       ]
+      },
+      {
+       "name": "SOS Voz Amiga",
+       "phone": "213 544 545",
+       "url": "https://www.sosvozamiga.org",
+       "notes": "Linha de apoio emocional, 24/7.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "Segurança Social",
+       "phone": "https://www.seg-social.pt",
+       "url": "https://www.seg-social.pt",
+       "notes": "Deficiência, dependência, and care supports.",
+       "tags": [
+        "benefits"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "BR": {
+   "name": "Brazil",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Emergência: 190 / 192",
+       "phone": "190",
+       "url": "https://www.gov.br",
+       "notes": "190 Polícia, 192 SAMU, 193 Bombeiros.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "CVV",
+       "phone": "188",
+       "url": "https://www.cvv.org.br",
+       "notes": "Apoio emocional 24/7, gratuito.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "INSS",
+       "phone": "135",
+       "url": "https://www.gov.br/inss",
+       "notes": "Benefícios por incapacidade e deficiência.",
+       "tags": [
+        "benefits"
+       ]
+      },
+      {
+       "name": "CRAS / CAPS",
+       "phone": "https://www.gov.br/mds",
+       "url": "https://www.gov.br/mds",
+       "notes": "Local social assistance centres in every municipality.",
+       "tags": [
+        "directory",
+        "caregiving"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "MX": {
+   "name": "Mexico",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Emergencias: 911",
+       "phone": "911",
+       "notes": "All emergencies nationwide.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "Línea de la Vida",
+       "phone": "800 911 2000",
+       "url": "https://www.gob.mx/salud",
+       "notes": "Atención en crisis y salud mental, 24/7.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "DIF",
+       "phone": "https://www.gob.mx/dif",
+       "url": "https://www.gob.mx/dif",
+       "notes": "Family services: disability support, home care, meals.",
+       "tags": [
+        "directory",
+        "caregiving"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "IN": {
+   "name": "India",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Emergency: 112",
+       "phone": "112",
+       "notes": "Police, fire, and ambulance.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "Tele-MANAS",
+       "phone": "14416",
+       "url": "https://telemanas.mohfw.gov.in",
+       "notes": "National mental health helpline, 24/7, in many languages.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "iCall",
+       "phone": "9152987821",
+       "url": "https://icallhelpline.org",
+       "notes": "Counselling by phone and email.",
+       "tags": [
+        "crisis"
+       ]
+      },
+      {
+       "name": "UDID / Divyangjan",
+       "phone": "https://www.swavlambancard.gov.in",
+       "url": "https://www.swavlambancard.gov.in",
+       "notes": "Disability ID card and welfare scheme access.",
+       "tags": [
+        "benefits",
+        "rights"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "JP": {
+   "name": "Japan",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "緊急: 119",
+       "phone": "119",
+       "notes": "Ambulance and fire. 110 police.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "Yorisoi Hotline",
+       "phone": "0120 783 556",
+       "url": "https://www.japan-life.net",
+       "notes": "Free listening line; multiple languages.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "市区町村の障害福祉窓口",
+       "phone": "https://www.mhlw.go.jp",
+       "url": "https://www.mhlw.go.jp",
+       "notes": "Your city office handles disability and care certification.",
+       "tags": [
+        "benefits",
+        "caregiving"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "ZA": {
+   "name": "South Africa",
+   "groups": [
+    {
+     "label": "Emergency & crisis",
+     "items": [
+      {
+       "name": "Emergency: 10111",
+       "phone": "10111",
+       "notes": "Police. 10177 ambulance.",
+       "tags": [
+        "emergency"
+       ]
+      },
+      {
+       "name": "SADAG",
+       "phone": "0800 567 567",
+       "url": "https://www.sadag.org",
+       "notes": "Counselling and crisis help, 24/7, free.",
+       "tags": [
+        "crisis",
+        "mental health"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability, care & benefits",
+     "items": [
+      {
+       "name": "SASSA",
+       "phone": "0800 60 10 11",
+       "url": "https://sassa.gov.za",
+       "notes": "Disability grants and social relief.",
+       "tags": [
+        "benefits"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "DEFAULT": {
+   "name": "International",
+   "groups": [
+    {
+     "label": "Emergency",
+     "items": [
+      {
+       "name": "Your local emergency number",
+       "phone": "112",
+       "notes": "112 works throughout the European Union and on most mobile networks worldwide. Elsewhere, check your local emergency number before you need it.",
+       "tags": [
+        "emergency"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Crisis support",
+     "items": [
+      {
+       "name": "Find A Helpline",
+       "phone": "https://findahelpline.com",
+       "url": "https://findahelpline.com",
+       "notes": "Free, verified crisis lines in over 130 countries. The quickest way to find a number that works where you are.",
+       "tags": [
+        "crisis",
+        "directory"
+       ]
+      },
+      {
+       "name": "Befrienders Worldwide",
+       "phone": "https://befrienders.org",
+       "url": "https://befrienders.org",
+       "notes": "Emotional support centres in around 30 countries.",
+       "tags": [
+        "crisis",
+        "directory"
+       ]
+      },
+      {
+       "name": "IASP crisis centre directory",
+       "phone": "https://www.iasp.info/crisis-centres-helplines/",
+       "url": "https://www.iasp.info/crisis-centres-helplines/",
+       "notes": "Maintained list of suicide prevention centres by country.",
+       "tags": [
+        "crisis",
+        "directory"
+       ]
+      }
+     ]
+    },
+    {
+     "label": "Disability & headache organisations",
+     "items": [
+      {
+       "name": "Local disability organisation",
+       "phone": "https://www.internationaldisabilityalliance.org",
+       "url": "https://www.internationaldisabilityalliance.org",
+       "notes": "The IDA links national disabled people's organisations; they know your country's benefits and rights best.",
+       "tags": [
+        "advocacy",
+        "rights"
+       ]
+      },
+      {
+       "name": "National headache society",
+       "phone": "https://ihs-headache.org",
+       "url": "https://ihs-headache.org",
+       "notes": "The International Headache Society lists member societies by country, each with local specialist information.",
+       "tags": [
+        "migraine",
+        "medical"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ }
+}
+{
+ "version": 2,
+ "updated": "2026-11-16",
+ "name": "Thurston County, Washington",
+ "state": "WA",
+ "country": "US",
+ "bbox": [
+  -123.22,
+  46.86,
+  -122.24,
+  47.2
+ ],
+ "source": "Compiled locally, November 2026. Verify hours and eligibility by phone before travelling.",
+ "categories": [
+  {
+   "id": "navigation",
+   "label": "Start here: general navigation",
+   "items": [
+    {
+     "name": "Washington 211",
+     "phone": "211 or 1-877-211-9274",
+     "url": "https://wa211.org",
+     "notes": "Master directory. Routes you to emergency rent help, utility assistance and local nonprofits."
+    },
+    {
+     "name": "Lewis-Mason-Thurston Area Agency on Aging (LMTAAA)",
+     "phone": "(360) 664-2168",
+     "address": "2404 Heritage Ct SW, Suite A, Olympia",
+     "notes": "The local Aging and Disability Resource Center (ADRC). Serves adults with disabilities as well as older adults. Help navigating long-term care and caregiver support."
+    },
+    {
+     "name": "Center for Independence (CFI)",
+     "phone": "(253) 582-1253 or 1-888-482-4839",
+     "notes": "Run by people with disabilities. Independent living skills, peer support, advocacy, finding and training attendants."
+    },
+    {
+     "name": "DSHS Home and Community Services (HCS) / Developmental Disabilities Administration (DDA)",
+     "notes": "Intake assessment for state-funded Medicaid long-term care, in-home caregivers, or developmental disability case management."
+    },
+    {
+     "name": "South Sound Parent to Parent (SSP2P)",
+     "phone": "(360) 352-1126",
+     "address": "2108 Caton Way SW, Olympia",
+     "notes": "Family and parent peer support when the disability involves a child or young adult."
+    }
+   ]
+  },
+  {
+   "id": "housing",
+   "label": "Housing & utilities",
+   "items": [
+    {
+     "name": "Housing Authority of Thurston County (HATC)",
+     "phone": "(360) 753-8292",
+     "address": "1206 12th Ave SE, Olympia",
+     "notes": "Section 8 and Project-Based Vouchers. Documented disability gets priority preference on several waitlists. Also handles reasonable accommodation requests."
+    },
+    {
+     "name": "Thurston County Coordinated Entry",
+     "notes": "Single intake system for rapid rehousing, emergency shelter and permanent supportive housing. Use this first if housing is an immediate crisis."
+    },
+    {
+     "name": "Community Action Council (CAC)",
+     "phone": "(360) 438-1100",
+     "address": "3020 Willamette Dr NE, Lacey",
+     "notes": "LIHEAP energy and heating bill assistance, weatherization, housing stabilisation programs."
+    }
+   ]
+  },
+  {
+   "id": "transportation",
+   "label": "Transportation",
+   "items": [
+    {
+     "name": "Intercity Transit, fixed routes",
+     "notes": "All regular buses in Olympia, Lacey, Tumwater and Yelm are fare-free and wheelchair accessible."
+    },
+    {
+     "name": "Intercity Transit Dial-A-Lift",
+     "phone": "(360) 786-8585",
+     "notes": "Door-to-door paratransit van service if a disability keeps you off fixed-route buses. Requires an eligibility application.",
+     "tags": [
+      "eligibility-required"
+     ]
+    },
+    {
+     "name": "Paratransit Services (Medicaid non-emergency medical transport)",
+     "phone": "1-800-846-5438",
+     "notes": "Free rides, or gas and mileage reimbursement, to covered medical, dental and behavioral health appointments if you have Apple Health. Book at least two business days ahead.",
+     "tags": [
+      "book-ahead",
+      "apple-health"
+     ]
+    },
+    {
+     "name": "Village Vans",
+     "phone": "(360) 705-5832",
+     "notes": "Free rides for job-related travel: interviews, training, getting to work. For low-income riders."
+    }
+   ]
+  },
+  {
+   "id": "caregiving",
+   "label": "Caregiving & in-home care",
+   "items": [
+    {
+     "name": "COPES / Community First Choice (via DSHS)",
+     "notes": "If you qualify financially and medically for Medicaid long-term care, the state pays for an Individual Provider (a friend or family member you choose and hire) or an agency caregiver for bathing, dressing, cooking, cleaning and errands.",
+     "tags": [
+      "medicaid"
+     ]
+    },
+    {
+     "name": "Catholic Community Services (CCS) Home Care",
+     "phone": "1-877-870-1582",
+     "notes": "State-trained home care aides for personal care, housework and errands. Accepts DSHS Medicaid and private pay."
+    },
+    {
+     "name": "Family Caregiver Support Program (via LMTAAA)",
+     "phone": "(360) 664-2168",
+     "notes": "Respite care, support groups and limited supplemental supplies if a friend or family member is caring for you unpaid."
+    },
+    {
+     "name": "Private-pay home care agencies",
+     "notes": "Comfort Keepers (360) 742-3773, Visiting Angels and ResCare HomeCare all operate locally, for out-of-pocket pay or long-term care insurance."
+    }
+   ]
+  },
+  {
+   "id": "medical",
+   "label": "Home health & free medical equipment",
+   "items": [
+    {
+     "name": "Medical Equipment Bank (Thurston County Council on Aging)",
+     "phone": "(360) 456-8810",
+     "address": "2704 Pacific Ave SE, Olympia",
+     "hours": "Tue, Thu and Sat, 11:00 AM to 2:00 PM",
+     "notes": "Free donated wheelchairs, walkers, shower chairs, hospital beds and incontinence supplies. First come, first served. Go in person and fill out a short form.",
+     "tags": [
+      "no-cost",
+      "walk-in"
+     ]
+    },
+    {
+     "name": "Skilled home health agencies",
+     "notes": "Providence SoundHomeCare and Hospice (360) 459-8311, MultiCare Home Health, and Assured Home Health. In-home nursing, physical therapy, occupational therapy or wound care ordered by a doctor. Covered by Medicare or Medicaid.",
+     "tags": [
+      "doctor-referral"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "food",
+   "label": "Food banks & home delivery",
+   "items": [
+    {
+     "name": "Thurston County Food Bank (TCFB)",
+     "phone": "(360) 352-8597",
+     "notes": "Olympia pantry: 220 Thurston Ave NE, Mon/Wed/Fri 10:30 AM to 3:00 PM, free meter parking on distribution days. Lacey pantry: 7027 Martin Way E, Tue and Thu 10:00 AM to 2:00 PM, plus 2nd and 4th Wed 5:00 to 6:30 PM. Ask for the Satellite Coordinator about volunteer home delivery if you are homebound. They also stock ready-to-eat no-cook bags and Ensure or Boost if you ask.",
+     "tags": [
+      "homebound-delivery",
+      "ask-for",
+      "ensure-boost"
+     ]
+    },
+    {
+     "name": "City Gates Ministries",
+     "phone": "(360) 705-0291",
+     "notes": "Delivers boxes of groceries to your door by arrangement. Usually calls back within 24 hours. Can accommodate dietary restrictions.",
+     "tags": [
+      "homebound-delivery"
+     ]
+    },
+    {
+     "name": "Capital Christian PEACE Center",
+     "phone": "(360) 456-1140",
+     "address": "4443 Martin Way E, Olympia",
+     "hours": "Mon to Wed, 9:00 AM to 1:00 PM",
+     "notes": "Groceries and basic essentials."
+    },
+    {
+     "name": "Hidden Creek Community Church",
+     "phone": "(360) 357-3739",
+     "address": "1807 9th Ave SW, Olympia",
+     "hours": "Wed, 9:30 to 11:00 AM",
+     "notes": "Drive-up or walk-up."
+    },
+    {
+     "name": "St. Christopher's Community Church",
+     "phone": "(360) 866-2111",
+     "address": "7902 Steamboat Rd NW, Olympia",
+     "hours": "3rd Thursday of the month, 2:00 to 4:00 PM"
+    },
+    {
+     "name": "Adventist Community Service Center",
+     "phone": "(360) 943-1518",
+     "address": "1029 N Puget St, Olympia",
+     "hours": "Tue, 9:15 AM to 12:00 PM",
+     "notes": "Emergency food and bread."
+    },
+    {
+     "name": "Emergency Outreach Food Pantry",
+     "phone": "(360) 491-0890",
+     "address": "906 Bowker St SE, Lacey",
+     "hours": "Mon, Wed, Fri, 1:00 to 2:45 PM",
+     "notes": "Drop-in, no application.",
+     "tags": [
+      "no-id",
+      "walk-in"
+     ]
+    },
+    {
+     "name": "Tenino Food Bank",
+     "phone": "(360) 264-5505",
+     "address": "798 Sussex Ave W, Tenino",
+     "hours": "Tue and Thu, 9:00 AM to 12:00 PM",
+     "notes": "No ID or proof of address required. Does Tuesday deliveries for shut-ins. Carries pet food.",
+     "tags": [
+      "no-id",
+      "homebound-delivery",
+      "pet-food"
+     ]
+    },
+    {
+     "name": "Olympia Union Gospel Mission",
+     "phone": "(360) 709-9725",
+     "address": "413 Franklin St NE, Olympia",
+     "hours": "Mon to Fri at 6:30 AM, 12:00 PM and 5:00 PM, plus weekend meals",
+     "notes": "Three free hot meals a day, open to anyone.",
+     "tags": [
+      "hot-meal",
+      "no-id"
+     ]
+    },
+    {
+     "name": "The Food Source Foundation",
+     "address": "Next to the downtown Olympia transit centre",
+     "hours": "Mon, Wed, Fri, 6:00 to 7:00 PM",
+     "notes": "Free ready-to-eat meals. No ID, no questions asked.",
+     "tags": [
+      "hot-meal",
+      "no-id"
+     ]
+    },
+    {
+     "name": "Senior Nutrition Program (Meals on Wheels via South Sound Seniors)",
+     "phone": "(360) 586-6181",
+     "address": "222 Columbia St NW, Olympia",
+     "notes": "Hot and frozen meal delivery for homebound seniors 60 and over, and eligible adults with disabilities depending on program criteria.",
+     "tags": [
+      "homebound-delivery",
+      "age-60-plus"
+     ]
+    }
+   ]
+  }
+ ]
+}
