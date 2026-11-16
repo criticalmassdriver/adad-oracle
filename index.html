@@ -9,7 +9,16 @@
 <title>Migraine Weather Forecast</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Figtree:wght@400;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://api.open-meteo.com" crossorigin>
+<link rel="dns-prefetch" href="https://geocoding-api.open-meteo.com">
+<link rel="dns-prefetch" href="https://api.zippopotam.us">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Figtree:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Figtree:wght@400;600&display=swap" rel="stylesheet"></noscript>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%232f6fed'/%3E%3Cpath d='M16 6.5c4.2 5.2 6.3 7.9 6.3 11.3a6.3 6.3 0 0 1-12.6 0c0-3.4 2.1-6.1 6.3-11.3z' fill='%23fff'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#2f6fed">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Migraine Weather Forecast">
+<meta property="og:description" content="Free daily, hourly and 10-day weather-based migraine risk forecast.">
 <style>
 /* ---------- Theme (accent + dark mode are set from JS by time of day and weather) ---------- */
 :root{--bg:#eef3f9;--card:#fff;--ink:#14202e;--mut:#566478;--line:#dde5ef;--accent:#2f6fed}
@@ -21,7 +30,7 @@ button,input{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
 /* ---------- Scene ---------- */
-#scene{position:relative;height:280px;overflow:hidden}
+#scene{position:relative;height:280px;overflow:hidden;background:linear-gradient(#4ea8de,#d4ecff)}
 #scene svg{position:absolute;inset:0;width:100%;height:100%}
 #scene h1{position:absolute;left:0;right:0;top:18px;margin:0;text-align:center;color:#fff;font-size:clamp(1.3rem,4vw,2rem);text-shadow:0 2px 10px rgba(0,0,0,.45);z-index:2}
 #fx{position:absolute;inset:0;pointer-events:none;z-index:1}
@@ -35,6 +44,8 @@ button,input{font:inherit;color:inherit}
 .pop{animation:pop 9s ease-in-out infinite}
 .tw{animation:tw 1.6s ease-in-out infinite}
 .bob{animation:pop 7s ease-in-out infinite}
+.pop,.bob{transform-box:fill-box;transform-origin:center}
+.item>span[title],.heart,#scene text{font-family:Figtree,system-ui,"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
 
 /* ---------- Layout ---------- */
 main{max-width:760px;margin:-54px auto 0;padding:0 14px 40px;position:relative;z-index:3}
@@ -54,9 +65,12 @@ main{max-width:760px;margin:-54px auto 0;padding:0 14px 40px;position:relative;z
 
 /* ---------- Risk display (the focal point) ---------- */
 .hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
-.ring{--c:#2e9e4f;--p:0;width:210px;height:210px;border-radius:50%;display:grid;place-items:center;
- background:conic-gradient(var(--c) calc(var(--p)*1%),var(--line) 0);transition:.6s}
-.ring>div{width:172px;height:172px;border-radius:50%;background:var(--card);display:grid;place-content:center}
+.ring{--c:#2e9e4f;position:relative;width:210px;height:210px;display:grid;place-items:center}
+.ring svg{position:absolute;inset:0;width:100%;height:100%}
+.ring circle{fill:none;stroke-width:22}
+.ring .trk{stroke:var(--line)}
+.ring .arc{stroke:var(--c);stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%}
+.ring>div{position:relative;width:172px;height:172px;border-radius:50%;background:var(--card);display:grid;place-content:center}
 .big{font-size:4.2rem;font-weight:800;line-height:1}
 .big small{font-size:1.6rem}
 .lvl{font-weight:600;font-size:1.2rem}
@@ -71,13 +85,17 @@ main{max-width:760px;margin:-54px auto 0;padding:0 14px 40px;position:relative;z
 .item:first-child{border-top:0}
 .item small{color:var(--mut);display:block}
 .bar{height:10px;border-radius:6px;background:var(--line);overflow:hidden}
-.bar i{display:block;height:100%;border-radius:6px}
+.bar i{display:block;height:100%;border-radius:6px;transition:width .5s ease,background .4s}
 .pct{text-align:right;font-weight:800;font-family:Fraunces,serif;font-size:1.15rem}
 
 footer{max-width:760px;margin:0 auto;padding:0 14px 40px;color:var(--mut);font-size:.92rem}
 footer a{color:var(--accent);font-weight:600}
 .hide{display:none}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (prefers-reduced-motion:reduce){
+  .rain,.snow,.heart,.tw,.pop,.bob{animation:none!important}
+  .tw{opacity:1}
+  *{transition-duration:.01ms!important}
+}
 </style>
 </head>
 <body>
@@ -159,9 +177,10 @@ function hourScore(H, i) {
     low:  clamp((1013 - g(i)) / 20),
     rain: clamp(H.precipitation[i] / 2.5)                         // mm per hour
   };
-  let sum = 0;
-  for (const k in W) sum += W[k] * f[k];
-  return {r: Math.min(10, sum / WT * 20), f};                     // x20 stretches the typical range to 0-10
+  if (i + 24 >= n) delete f.next;                                 // no forward data left, don't score it as calm
+  let sum = 0, wt = 0;
+  for (const k in f) { sum += W[k] * f[k]; wt += W[k]; }
+  return {r: Math.min(10, sum / wt * 20), f};                      // x20 stretches the typical range to 0-10
 }
 // Sensitivity shifts the 0-10 score by -1 / 0 / +1, then converts to a percent
 const pct = r => Math.round(clamp(r + S - 1, 0, 10) * 10);
@@ -169,7 +188,8 @@ const pct = r => Math.round(clamp(r + S - 1, 0, 10) * 10);
 function buildModel() {
   const H = D.hourly, today = D.current.time.slice(0, 10);
   const b = H.time.findIndex(t => t.startsWith(today));
-  const sc = H.time.map((_, i) => hourScore(H, i));
+  if (!D._sc || D._sc.length !== H.time.length) D._sc = H.time.map((_, i) => hourScore(H, i));
+  const sc = D._sc;
   const days = [];
   for (let k = 0; k < 10; k++) {
     const s = b + k * 24, hrs = sc.slice(s, s + 24), rs = hrs.map(h => h.r);
@@ -184,6 +204,21 @@ const hr = t => { const h = +t.slice(11, 13); return (h % 12 || 12) + (h < 12 ? 
 const dayName = d => new Date(d + 'T12:00').toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
 const deg = v => Math.round(v) + '\u00B0';
 const bar = p => `<div class="bar"><i style="width:${p}%;background:${lvl(p)[2]}"></i></div>`;
+const RC = 2 * Math.PI * 94;                                      // ring circumference
+const ringMarkup = (p, c) => `<div class="ring" style="--c:${c}"><svg viewBox="0 0 240 240" aria-hidden="true">
+    <circle class="trk" cx="120" cy="120" r="94"/>
+    <circle class="arc" cx="120" cy="120" r="94" stroke-dasharray="${RC.toFixed(1)}" stroke-dashoffset="${RC.toFixed(1)}"/></svg>
+    <div><div class="big">${p}<small>%</small></div></div></div>`;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+// The card is rebuilt each render, so transition alone never fires - tween the new arc instead
+function drawRing(p) {
+  const arc = $('#p-today .arc');
+  if (!arc) return;
+  const to = RC * (1 - clamp(p, 0, 100) / 100);
+  if (reduce.matches || !arc.animate) { arc.style.strokeDashoffset = to; return; }
+  arc.animate([{strokeDashoffset: RC}, {strokeDashoffset: to}],
+    {duration: 800, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards'});
+}
 
 /* ---------- Renderers ---------- */
 function render() {
@@ -191,28 +226,29 @@ function render() {
   const day = M.days[0], p = pct(day.raw), L = lvl(p);
   const H = D.hourly, d = D.daily, di = d.time.indexOf(D.current.time.slice(0, 10));
   const now = WX(d.weather_code[di]);
-  const hi = day.hrs[day.peak], drivers = Object.keys(W).map(k => [k, W[k] * hi.f[k] / WT]).filter(x => x[1] > .03)
+  const hi = day.hrs[day.peak], drivers = Object.keys(W).map(k => [k, W[k] * (hi.f[k] || 0) / WT]).filter(x => x[1] > .03)
     .sort((a, b) => b[1] - a[1]).slice(0, 3).map(x => NAMES[x[0]]);
   const dp = H.surface_pressure[M.b + day.peak] - H.surface_pressure[M.b + day.peak - 6];
 
   // Today tab: big percentage first, weather details underneath
   $('#p-today').innerHTML = `<div class="hero">
-    <div class="ring" style="--p:${p};--c:${L[2]}"><div><div class="big">${p}<small>%</small></div></div></div>
+    ${ringMarkup(p, L[2])}
     <div class="lvl">${L[1]} migraine risk today</div>
     <div class="stats">
       <div class="stat"><span>Conditions</span><b>${now[1]} ${now[0]}</b></div>
       <div class="stat"><span>Now</span><b>${deg(D.current.temperature_2m)}</b></div>
       <div class="stat"><span>High / Low</span><b>${deg(d.temperature_2m_max[di])} / ${deg(d.temperature_2m_min[di])}</b></div>
-      <div class="stat"><span>Chance of precipitation</span><b>${d.precipitation_probability_max[di] ?? 0}%</b></div>
+      <div class="stat"><span>Chance of precipitation</span><b>${d.precipitation_probability_max[di] || 0}%</b></div>
     </div>
     <p class="why">${drivers.length ? 'Biggest factors: ' + drivers.join(', ') + '.' : 'No strong weather triggers today.'}
     Peak risk around ${hr(H.time[M.b + day.peak])} (pressure ${dp > 0 ? '+' : ''}${dp.toFixed(1)} hPa over the prior 6 hours).</p></div>`;
+  drawRing(p);
 
   // Hourly tab: the 24 hours of today
   $('#p-hourly').innerHTML = day.hrs.map((h, i) => {
     const j = M.b + i, q = pct(h.r), w = WX(H.weather_code[j]);
     return `<div class="item"><div><b>${hr(H.time[j])}</b></div><span title="${w[0]}">${w[1]}</span>
-      <div>${bar(q)}<small>${deg(H.temperature_2m[j])} \u00B7 ${H.precipitation_probability[j] ?? 0}% rain \u00B7 ${lvl(q)[1]}</small></div>
+      <div>${bar(q)}<small>${deg(H.temperature_2m[j])} \u00B7 ${H.precipitation_probability[j] || 0}% rain \u00B7 ${lvl(q)[1]}</small></div>
       <div class="pct">${q}%</div></div>`;
   }).join('');
 
@@ -221,7 +257,7 @@ function render() {
     const j = di + x.k, q = pct(x.raw), w = WX(d.weather_code[j]);
     return `<div class="item"><div><b>${x.k ? dayName(d.time[j]).split(',')[0] : 'Today'}</b><small>${d.time[j].slice(5).replace('-', '/')}</small></div>
       <span title="${w[0]}">${w[1]}</span>
-      <div>${bar(q)}<small>${deg(d.temperature_2m_max[j])} / ${deg(d.temperature_2m_min[j])} \u00B7 ${d.precipitation_probability_max[j] ?? 0}% rain \u00B7 ${lvl(q)[1]}</small></div>
+      <div>${bar(q)}<small>${deg(d.temperature_2m_max[j])} / ${deg(d.temperature_2m_min[j])} \u00B7 ${d.precipitation_probability_max[j] || 0}% rain \u00B7 ${lvl(q)[1]}</small></div>
       <div class="pct">${q}%</div></div>`;
   }).join('');
 
@@ -291,7 +327,8 @@ function paintScene(cat) {
   xs.forEach((x, i) => s += pine(x, 236 + (i % 3) * 8, .62 + (i % 4) * .12, snow, lights));
   if (snow) s += `<path d="M0 262 Q200 248 400 262 T800 256 V280 H0Z" fill="#fff" opacity=".9"/>`;
   if (gray) s += `<rect width="800" height="280" fill="#445" opacity="${cat === 'cloud' ? .12 : .25}"/>`;
-  $('#scene').querySelector('svg')?.remove();
+  const old = $('#scene').querySelector('svg');
+  if (old) old.remove();
   $('#scene').insertAdjacentHTML('afterbegin', s + '</svg>');
 
   // Falling rain / snow and floating hearts
@@ -306,28 +343,65 @@ function paintScene(cat) {
 }
 
 /* ---------- Data loading ---------- */
+let lastAsk = null;
+// Placeholder so the card is never an empty white box while the API answers
+function skeleton() {
+  $('#p-today').innerHTML = `<div class="hero">
+    <div class="ring" style="--c:var(--line)"><svg viewBox="0 0 240 240" aria-hidden="true">
+      <circle class="trk" cx="120" cy="120" r="94"/></svg>
+    <div><div class="big">\u2013<small>%</small></div></div></div>
+    <div class="lvl">Loading your forecast\u2026</div></div>`;
+}
+function failed(msg) {
+  $('#loc').textContent = 'Could not load the forecast.';
+  $('#p-today').innerHTML = `<div class="hero"><p class="why" style="text-align:center">
+    ${msg || 'The weather service did not answer. Check your connection and try again.'}</p>
+    <button class="btn alt" id="retry">Try again</button></div>`;
+  const b = $('#retry');
+  if (b) b.onclick = () => { if (lastAsk) load(lastAsk[0], lastAsk[1], lastAsk[2]); };
+}
 async function load(lat, lon, name) {
+  lastAsk = [lat, lon, name];
   $('#loc').textContent = 'Loading forecast\u2026';
   const q = 'hourly=temperature_2m,relative_humidity_2m,precipitation,precipitation_probability,surface_pressure,weather_code'
     + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&current=temperature_2m,weather_code'
     + `&past_days=7&forecast_days=11&timezone=auto&temperature_unit=${F ? 'fahrenheit' : 'celsius'}`;
   try {
-    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&${q}`);
+    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&${q}`, {cache: 'no-store'});
+    if (!r.ok) throw new Error('HTTP ' + r.status);
     D = await r.json();
     if (D.error) throw new Error(D.reason);
+    if (!D.hourly || !D.daily) throw new Error('incomplete response');
     D.lat = lat; D.lon = lon; D.place = name;
     $('#loc').textContent = name;
     render();
-    try { localStorage.setItem('loc', JSON.stringify([lat, lon, name])); } catch (e) {}
-  } catch (e) { $('#loc').textContent = 'Could not load the forecast. Check your connection and try again.'; }
+    try {
+      localStorage.setItem('loc', JSON.stringify([lat, lon, name]));
+      const slim = Object.assign({}, D); delete slim._sc;
+      localStorage.setItem('cache', JSON.stringify({t: Date.now(), d: slim}));   // survives a reload for 3h
+    } catch (e) {}
+  } catch (e) { failed(); }
 }
 async function byZip(z) {
-  try {
+  if (!/^\d{5}$/.test(z)) { $('#loc').textContent = 'Enter a valid 5-digit US ZIP.'; return; }
+  $('#loc').textContent = 'Looking up that ZIP\u2026';
+  let net = false;
+  try {                                                             // Open-Meteo first: same origin as the data
+    const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${z}&count=1&countryCode=US&language=en`);
+    if (r.ok) {
+      const g = await r.json(), p = g && g.results && g.results[0];
+      if (p) return load(+p.latitude, +p.longitude, `${p.name}, ${p.admin1}`);
+    }
+  } catch (e) { net = true; }
+  try {                                                             // zippopotam as the precise fallback
     const r = await fetch(`https://api.zippopotam.us/us/${z}`);
-    if (!r.ok) throw 0;
-    const p = (await r.json()).places[0];
-    load(+p.latitude, +p.longitude, `${p['place name']}, ${p['state abbreviation']}`);
-  } catch (e) { $('#loc').textContent = 'ZIP code not found. Enter a valid 5-digit US ZIP.'; }
+    if (r.ok) {
+      const p = (await r.json()).places[0];
+      return load(+p.latitude, +p.longitude, `${p['place name']}, ${p['state abbreviation']}`);
+    }
+  } catch (e) { net = true; }
+  failed(net ? 'Could not reach the location service. Check your connection and try again.'
+             : 'That ZIP code could not be found. Try another one, or use \u201cUse my location\u201d.');
 }
 
 /* ---------- RSS: builds a feed file from the current forecast ---------- */
@@ -337,7 +411,7 @@ function rss() {
     const j = D.daily.time.indexOf(D.current.time.slice(0, 10)) + x.k, q = pct(x.raw), w = WX(D.daily.weather_code[j]);
     return `<item><title>${esc(dayName(D.daily.time[j]))}: ${q}% (${lvl(q)[1]})</title><guid isPermaLink="false">${D.daily.time[j]}-${esc(D.place)}-${S}</guid>
 <pubDate>${new Date(D.daily.time[j] + 'T06:00:00Z').toUTCString()}</pubDate>
-<description>${esc(`${w[0]}, high ${deg(D.daily.temperature_2m_max[j])}, low ${deg(D.daily.temperature_2m_min[j])}, ${D.daily.precipitation_probability_max[j] ?? 0}% chance of precipitation`)}</description></item>`;
+<description>${esc(`${w[0]}, high ${deg(D.daily.temperature_2m_max[j])}, low ${deg(D.daily.temperature_2m_min[j])}, ${D.daily.precipitation_probability_max[j] || 0}% chance of precipitation`)}</description></item>`;
   }).join('\n');
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel><title>Migraine Forecast: ${esc(D.place)}</title>
 <link>${esc(location.href.split('#')[0])}</link><description>10-day weather-based migraine risk</description>\n${items}\n</channel></rss>`;
@@ -364,11 +438,25 @@ document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
 $('#rss').onclick = rss;
 
 /* ---------- Start: restore saved sensitivity and location ---------- */
-try { S = +(localStorage.getItem('sens') ?? 1); $('#sens').value = S; $('#sensName').textContent = SENS[S]; } catch (e) {}
+try {
+  const sv = localStorage.getItem('sens');
+  S = sv === null ? 1 : +sv;
+  if (!(S >= 0 && S <= 2)) S = 1;
+  $('#sens').value = S; $('#sensName').textContent = SENS[S];
+} catch (e) {}
 (() => {
   const z = new URLSearchParams(location.search).get('zip');           // e.g. ?zip=98101
-  if (z) return byZip(z);
-  try { const s = JSON.parse(localStorage.getItem('loc')); if (s) return load(...s); } catch (e) {}
+  if (z) { skeleton(); return byZip(z); }
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem('loc')); } catch (e) {}
+  if (s) {
+    try {                                                              // paint the last forecast instantly, then refresh
+      const c = JSON.parse(localStorage.getItem('cache'));
+      if (c && c.d && c.d.hourly && Date.now() - c.t < 3 * 36e5) { D = c.d; D.place = s[2]; render(); }
+    } catch (e) {}
+    return load(s[0], s[1], s[2]);
+  }
+  skeleton();
   D = {current: {time: new Date().toISOString().slice(0, 13) + ':00'}, lat: 47.6, lon: -122.3, elevation: 50};
   paintScene('clear');                                                 // default scene until a location is chosen
 })();
