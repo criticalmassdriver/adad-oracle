@@ -139,9 +139,9 @@ const F = /^en-US/.test(navigator.language);          // Fahrenheit for US local
 let S = 1, D = null, M = null;                        // sensitivity, raw data, computed model
 
 /* ---------- Weather code -> [label, icon, scene category] ---------- */
-const WX = c => c == 0 ? ['Clear','â˜€ï¸','clear'] : c < 3 ? ['Partly cloudy','â›…','cloud'] : c == 3 ? ['Cloudy','â˜ï¸','cloud']
-  : c < 50 ? ['Fog','ðŸŒ«ï¸','fog'] : c < 60 ? ['Drizzle','ðŸŒ¦ï¸','rain'] : c < 70 ? ['Rain','ðŸŒ§ï¸','rain']
-  : c < 80 ? ['Snow','ðŸŒ¨ï¸','snow'] : c < 83 ? ['Showers','ðŸŒ¦ï¸','rain'] : c < 87 ? ['Snow showers','ðŸŒ¨ï¸','snow'] : ['Thunderstorms','â›ˆï¸','rain'];
+const WX = c => c == 0 ? ['Clear','\u2600\uFE0F','clear'] : c < 3 ? ['Partly cloudy','\u26C5','cloud'] : c == 3 ? ['Cloudy','\u2601\uFE0F','cloud']
+  : c < 50 ? ['Fog','\uD83C\uDF2B\uFE0F','fog'] : c < 60 ? ['Drizzle','\uD83C\uDF26\uFE0F','rain'] : c < 70 ? ['Rain','\uD83C\uDF27\uFE0F','rain']
+  : c < 80 ? ['Snow','\uD83C\uDF28\uFE0F','snow'] : c < 83 ? ['Showers','\uD83C\uDF26\uFE0F','rain'] : c < 87 ? ['Snow showers','\uD83C\uDF28\uFE0F','snow'] : ['Thunderstorms','\u26C8\uFE0F','rain'];
 
 /* ---------- Risk model ---------- */
 // Scores one hour (index i of the hourly series) on a 0-10 scale, plus each feature's share
@@ -182,7 +182,7 @@ function buildModel() {
 /* ---------- Helpers ---------- */
 const hr = t => { const h = +t.slice(11, 13); return (h % 12 || 12) + (h < 12 ? 'am' : 'pm'); };
 const dayName = d => new Date(d + 'T12:00').toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
-const deg = v => Math.round(v) + 'Â°';
+const deg = v => Math.round(v) + '\u00B0';
 const bar = p => `<div class="bar"><i style="width:${p}%;background:${lvl(p)[2]}"></i></div>`;
 
 /* ---------- Renderers ---------- */
@@ -212,7 +212,7 @@ function render() {
   $('#p-hourly').innerHTML = day.hrs.map((h, i) => {
     const j = M.b + i, q = pct(h.r), w = WX(H.weather_code[j]);
     return `<div class="item"><div><b>${hr(H.time[j])}</b></div><span title="${w[0]}">${w[1]}</span>
-      <div>${bar(q)}<small>${deg(H.temperature_2m[j])} Â· ${H.precipitation_probability[j] ?? 0}% rain Â· ${lvl(q)[1]}</small></div>
+      <div>${bar(q)}<small>${deg(H.temperature_2m[j])} \u00B7 ${H.precipitation_probability[j] ?? 0}% rain \u00B7 ${lvl(q)[1]}</small></div>
       <div class="pct">${q}%</div></div>`;
   }).join('');
 
@@ -221,7 +221,7 @@ function render() {
     const j = di + x.k, q = pct(x.raw), w = WX(d.weather_code[j]);
     return `<div class="item"><div><b>${x.k ? dayName(d.time[j]).split(',')[0] : 'Today'}</b><small>${d.time[j].slice(5).replace('-', '/')}</small></div>
       <span title="${w[0]}">${w[1]}</span>
-      <div>${bar(q)}<small>${deg(d.temperature_2m_max[j])} / ${deg(d.temperature_2m_min[j])} Â· ${d.precipitation_probability_max[j] ?? 0}% rain Â· ${lvl(q)[1]}</small></div>
+      <div>${bar(q)}<small>${deg(d.temperature_2m_max[j])} / ${deg(d.temperature_2m_min[j])} \u00B7 ${d.precipitation_probability_max[j] ?? 0}% rain \u00B7 ${lvl(q)[1]}</small></div>
       <div class="pct">${q}%</div></div>`;
   }).join('');
 
@@ -243,7 +243,7 @@ function holiday(hourNow) {
 function pine(x, y, s, snow, lights) {
   let g = `<g transform="translate(${x},${y}) scale(${s})"><rect x="-4" y="0" width="8" height="12" fill="#5b3a29"/>`;
   const tiers = [[0,-78,24,-40],[0,-58,32,-14],[0,-34,40,6]];
-  tiers.forEach(t => { g += `<polygon points="${t[0]},${t[1]} ${-t[2]},${t[3]} ${t[2]},${t[3]}" fill="var(--tree)"/>`; });
+  tiers.forEach(t => { g += `<polygon points="${t[0]},${t[1]} ${-t[2]},${t[3]} ${t[2]},${t[3]}" style="fill:var(--tree)"/>`; });
   if (snow) tiers.forEach(t => { g += `<polygon points="${t[0]},${t[1]} ${-t[2] * .45},${t[1] + (t[3] - t[1]) * .45} ${t[2] * .45},${t[1] + (t[3] - t[1]) * .45}" fill="#fff"/>`; });
   if (lights) [[-10,-50],[12,-54],[-22,-22],[0,-30],[22,-20],[-30,0],[10,-6],[30,2]].forEach((c, i) =>
     g += `<circle class="tw" style="animation-delay:${i * .3}s" cx="${c[0]}" cy="${c[1]}" r="3.2" fill="${i % 2 ? '#fff' : '#6ec1ff'}"/>`);
@@ -274,7 +274,7 @@ function paintScene(cat) {
   if (night) for (let i = 0; i < 26; i++) s += `<circle class="tw" style="animation-delay:${i * .2}s" cx="${(i * 97) % 800}" cy="${(i * 53) % 130 + 10}" r="1.4" fill="#fff"/>`;
   if (cat === 'clear' || cat === 'cloud') s += night ? `<circle cx="680" cy="70" r="22" fill="#f3f1d8"/>` : `<circle cx="${phase === 'day' ? 660 : 700}" cy="${phase === 'day' ? 70 : 150}" r="28" fill="#ffd54a"/>`;
   if (cat !== 'clear') [[120,60],[380,40],[600,85]].forEach(c => s += `<g fill="${gray ? '#9aa6b5' : '#fff'}" opacity=".9"><ellipse cx="${c[0]}" cy="${c[1]}" rx="60" ry="18"/><ellipse cx="${c[0] + 30}" cy="${c[1] - 14}" rx="38" ry="16"/></g>`);
-  if (hol === 'fire' || hol === 'halloween') s += `<text class="bob" x="120" y="150" font-size="34">${hol === 'fire' ? 'ðŸŽ†' : 'ðŸŽƒ'}</text>`;
+  if (hol === 'fire' || hol === 'halloween') s += `<text class="bob" x="120" y="150" font-size="34">${hol === 'fire' ? '\uD83C\uDF86' : '\uD83C\uDF83'}</text>`;
   if (biome !== 'hills') {                                       // mountains with snow caps
     s += `<polygon points="0,220 150,120 250,180 380,60 520,200 640,110 800,220" fill="${pal[2]}"/>
       <polygon points="380,60 350,95 372,88 385,104 405,86 420,96" fill="#fff" opacity=".9"/>
@@ -299,7 +299,7 @@ function paintScene(cat) {
   const kind = cat === 'rain' ? 'rain' : snow ? 'snow' : hol === 'love' ? 'heart' : null;
   for (let i = 0; kind && i < (kind === 'heart' ? 8 : 55); i++) {
     const e = document.createElement('div');
-    e.className = kind; if (kind === 'heart') e.textContent = 'â¤ï¸';
+    e.className = kind; if (kind === 'heart') e.textContent = '\u2764\uFE0F';
     e.style.cssText = `left:${Math.random() * 100}%;animation-duration:${kind === 'rain' ? .8 + Math.random() * .6 : 3 + Math.random() * 4}s;animation-delay:${-Math.random() * 5}s`;
     fx.appendChild(e);
   }
@@ -307,7 +307,7 @@ function paintScene(cat) {
 
 /* ---------- Data loading ---------- */
 async function load(lat, lon, name) {
-  $('#loc').textContent = 'Loading forecastâ€¦';
+  $('#loc').textContent = 'Loading forecast\u2026';
   const q = 'hourly=temperature_2m,relative_humidity_2m,precipitation,precipitation_probability,surface_pressure,weather_code'
     + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&current=temperature_2m,weather_code'
     + `&past_days=7&forecast_days=11&timezone=auto&temperature_unit=${F ? 'fahrenheit' : 'celsius'}`;
