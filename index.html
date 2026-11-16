@@ -352,13 +352,50 @@ function skeleton() {
     <div><div class="big">\u2013<small>%</small></div></div></div>
     <div class="lvl">Loading your forecast\u2026</div></div>`;
 }
-function failed(msg) {
+// Turn the raw failure into a hint people can act on
+function advice(detail) {
+  const d = String(detail || '');
+  if (/403|429|rate limit/i.test(d)) return 'A VPN, proxy or shared network can trigger this. Turn the VPN off and try again.';
+  if (/Network error/i.test(d)) return 'The request never left your browser. Check a VPN, DNS filter or ad-blocker, then try again.';
+  if (/not JSON|incomplete/i.test(d)) return 'Something between you and the weather API replaced the reply, often a captive portal or proxy.';
+  if (/draw/i.test(d)) return 'This one is a bug in the page itself, not your connection.';
+  return '';
+}
+function failed(msg, detail) {                                        // detail carries the real cause, not a guess
+  const hint = advice(detail);
   $('#loc').textContent = 'Could not load the forecast.';
   $('#p-today').innerHTML = `<div class="hero"><p class="why" style="text-align:center">
     ${msg || 'The weather service did not answer. Check your connection and try again.'}</p>
+    ${detail ? `<p class="why" style="text-align:center;opacity:.65;font-size:.8rem">${esc(detail)}</p>` : ''}
+    ${hint ? `<p class="why" style="text-align:center;font-size:.85rem">${esc(hint)}</p>` : ''}
     <button class="btn alt" id="retry">Try again</button></div>`;
   const b = $('#retry');
   if (b) b.onclick = () => { if (lastAsk) load(lastAsk[0], lastAsk[1], lastAsk[2]); };
+}
+// One fetch helper for every call: retries hiccups, surfaces the real reason on failure
+async function getJSON(url, tries = 2) {
+  for (let n = 0; ; n++) {
+    let r;
+    try {
+      r = await fetch(url, {cache: 'reload'});
+    } catch (e) {                                                   // blocked, offline, DNS, VPN, extension
+      if (n >= tries) throw new Error('Network error: ' + (e && e.message ? e.message : 'request blocked'));
+      await new Promise(s => setTimeout(s, 700 * (n + 1)));
+      continue;
+    }
+    if (r.ok) {
+      const j = await r.json().catch(() => null);
+      if (!j) throw new Error('The service sent a reply that was not JSON.');
+      if (j.error) throw new Error(j.reason || 'The service reported an error.');
+      return j;
+    }
+    if ((r.status === 429 || r.status >= 500) && n < tries) {        // rate limit or outage: back off, then retry
+      const wait = (+(r.headers.get('retry-after') || 0) * 1000) || 900 * (n + 1);
+      await new Promise(s => setTimeout(s, Math.min(wait, 4000)));
+      continue;
+    }
+    throw new Error(r.status === 429 ? 'HTTP 429, rate limited. Wait a minute, then try again.' : 'HTTP ' + r.status);
+  }
 }
 async function load(lat, lon, name) {
   lastAsk = [lat, lon, name];
@@ -366,42 +403,43 @@ async function load(lat, lon, name) {
   const q = 'hourly=temperature_2m,relative_humidity_2m,precipitation,precipitation_probability,surface_pressure,weather_code'
     + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&current=temperature_2m,weather_code'
     + `&past_days=7&forecast_days=11&timezone=auto&temperature_unit=${F ? 'fahrenheit' : 'celsius'}`;
+  let data;
   try {
-    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&${q}`, {cache: 'no-store'});
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    D = await r.json();
-    if (D.error) throw new Error(D.reason);
-    if (!D.hourly || !D.daily) throw new Error('incomplete response');
-    D.lat = lat; D.lon = lon; D.place = name;
-    $('#loc').textContent = name;
+    data = await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&${q}`);
+  } catch (e) { return failed(undefined, e.message); }
+  D = data;
+  if (!D.hourly || !D.daily || !D.hourly.time || !D.daily.time)
+    return failed('The weather service sent an incomplete response.', 'no hourly/daily series in the reply');
+  D.lat = lat; D.lon = lon; D.place = name;
+  $('#loc').textContent = name;
+  try {                                                              // a drawing bug must never look like a network fault
     render();
-    try {
-      localStorage.setItem('loc', JSON.stringify([lat, lon, name]));
-      const slim = Object.assign({}, D); delete slim._sc;
-      localStorage.setItem('cache', JSON.stringify({t: Date.now(), d: slim}));   // survives a reload for 3h
-    } catch (e) {}
-  } catch (e) { failed(); }
+  } catch (e) {
+    console.error(e);
+    return failed('The forecast arrived but the page could not draw it.', e.message);
+  }
+  try {
+    localStorage.setItem('loc', JSON.stringify([lat, lon, name]));
+    const slim = Object.assign({}, D); delete slim._sc;
+    localStorage.setItem('cache', JSON.stringify({t: Date.now(), d: slim}));   // survives a reload for 3h
+  } catch (e) {}
 }
 async function byZip(z) {
   if (!/^\d{5}$/.test(z)) { $('#loc').textContent = 'Enter a valid 5-digit US ZIP.'; return; }
   $('#loc').textContent = 'Looking up that ZIP\u2026';
-  let net = false;
+  let detail = '';
   try {                                                             // Open-Meteo first: same origin as the data
-    const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${z}&count=1&countryCode=US&language=en`);
-    if (r.ok) {
-      const g = await r.json(), p = g && g.results && g.results[0];
-      if (p) return load(+p.latitude, +p.longitude, `${p.name}, ${p.admin1}`);
-    }
-  } catch (e) { net = true; }
+    const g = await getJSON(`https://geocoding-api.open-meteo.com/v1/search?name=${z}&count=1&countryCode=US&language=en`, 1);
+    const p = g && g.results && g.results[0];
+    if (p) return load(+p.latitude, +p.longitude, p.admin1 ? `${p.name}, ${p.admin1}` : p.name);
+  } catch (e) { detail = e.message; }
   try {                                                             // zippopotam as the precise fallback
-    const r = await fetch(`https://api.zippopotam.us/us/${z}`);
-    if (r.ok) {
-      const p = (await r.json()).places[0];
-      return load(+p.latitude, +p.longitude, `${p['place name']}, ${p['state abbreviation']}`);
-    }
-  } catch (e) { net = true; }
-  failed(net ? 'Could not reach the location service. Check your connection and try again.'
-             : 'That ZIP code could not be found. Try another one, or use \u201cUse my location\u201d.');
+    const g = await getJSON(`https://api.zippopotam.us/us/${z}`, 1);
+    const p = g && g.places && g.places[0];
+    if (p) return load(+p.latitude, +p.longitude, `${p['place name']}, ${p['state abbreviation']}`);
+  } catch (e) { detail = detail || e.message; }
+  if (detail) return failed('Could not reach the location service. Check your connection and try again.', detail);
+  failed('That ZIP code could not be found. Try another one, or use \u201cUse my location\u201d.');
 }
 
 /* ---------- RSS: builds a feed file from the current forecast ---------- */
