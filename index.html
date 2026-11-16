@@ -1,1 +1,377 @@
-<h1> pressure migraine score coming soon this is just a preview.  </h1>
+<!doctype html>
+<html lang="en">
+<head>
+<!-- Created by C.M.D -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="author" content="C.M.D">
+<meta name="description" content="Free daily, hourly and 10-day weather-based migraine risk forecast.">
+<title>Migraine Weather Forecast</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Figtree:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ---------- Theme (accent + dark mode are set from JS by time of day and weather) ---------- */
+:root{--bg:#eef3f9;--card:#fff;--ink:#14202e;--mut:#566478;--line:#dde5ef;--accent:#2f6fed}
+.dark{--bg:#0d1323;--card:#161e34;--ink:#e9efff;--mut:#9aa8c6;--line:#26304c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Figtree,system-ui,sans-serif;transition:background .6s}
+h1,h2,.big{font-family:Fraunces,Georgia,serif}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* ---------- Scene ---------- */
+#scene{position:relative;height:280px;overflow:hidden}
+#scene svg{position:absolute;inset:0;width:100%;height:100%}
+#scene h1{position:absolute;left:0;right:0;top:18px;margin:0;text-align:center;color:#fff;font-size:clamp(1.3rem,4vw,2rem);text-shadow:0 2px 10px rgba(0,0,0,.45);z-index:2}
+#fx{position:absolute;inset:0;pointer-events:none;z-index:1}
+.rain{position:absolute;top:-20px;width:2px;height:16px;background:rgba(190,215,255,.7);animation:fall linear infinite}
+.snow{position:absolute;top:-10px;width:6px;height:6px;border-radius:50%;background:#fff;opacity:.9;animation:fall linear infinite}
+.heart{position:absolute;bottom:-20px;animation:rise linear infinite}
+@keyframes fall{to{transform:translateY(320px)}}
+@keyframes rise{to{transform:translateY(-320px);opacity:0}}
+@keyframes pop{0%,100%{transform:translateY(40px)}35%,65%{transform:translateY(0)}}
+@keyframes tw{50%{opacity:.2}}
+.pop{animation:pop 9s ease-in-out infinite}
+.tw{animation:tw 1.6s ease-in-out infinite}
+.bob{animation:pop 7s ease-in-out infinite}
+
+/* ---------- Layout ---------- */
+main{max-width:760px;margin:-54px auto 0;padding:0 14px 40px;position:relative;z-index:3}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.row input[type=text]{flex:1;min-width:120px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.btn{padding:10px 14px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:600;cursor:pointer}
+.btn.alt{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+#loc{color:var(--mut);margin:8px 0 0;font-size:.9rem}
+.sens{margin-top:14px}
+.sens input{width:100%;accent-color:var(--accent)}
+.sens .lbl{display:flex;justify-content:space-between;color:var(--mut);font-size:.85rem}
+.sens .lbl b{color:var(--ink)}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tabs button{flex:1;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--card);cursor:pointer;font-weight:600}
+.tabs button[aria-selected=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* ---------- Risk display (the focal point) ---------- */
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
+.ring{--c:#2e9e4f;--p:0;width:210px;height:210px;border-radius:50%;display:grid;place-items:center;
+ background:conic-gradient(var(--c) calc(var(--p)*1%),var(--line) 0);transition:.6s}
+.ring>div{width:172px;height:172px;border-radius:50%;background:var(--card);display:grid;place-content:center}
+.big{font-size:4.2rem;font-weight:800;line-height:1}
+.big small{font-size:1.6rem}
+.lvl{font-weight:600;font-size:1.2rem}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;width:100%;margin-top:12px}
+.stat{background:var(--bg);border-radius:12px;padding:10px;text-align:left}
+.stat span{display:block;color:var(--mut);font-size:.8rem}
+.stat b{font-size:1.15rem}
+.why{width:100%;text-align:left;color:var(--mut);font-size:.92rem;margin-top:8px}
+
+/* ---------- Hourly / 10-day rows ---------- */
+.item{display:grid;grid-template-columns:70px 34px 1fr 54px;gap:8px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item small{color:var(--mut);display:block}
+.bar{height:10px;border-radius:6px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:6px}
+.pct{text-align:right;font-weight:800;font-family:Fraunces,serif;font-size:1.15rem}
+
+footer{max-width:760px;margin:0 auto;padding:0 14px 40px;color:var(--mut);font-size:.92rem}
+footer a{color:var(--accent);font-weight:600}
+.hide{display:none}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header id="scene" aria-label="Illustration of your current weather">
+  <h1>Migraine Weather Forecast</h1>
+  <div id="fx"></div>
+</header>
+
+<main>
+  <section class="card">
+    <div class="row">
+      <button class="btn" id="geo">Use my location</button>
+      <form class="row" id="zipForm" style="flex:1">
+        <input type="text" id="zip" inputmode="numeric" maxlength="5" placeholder="or enter a US ZIP code" aria-label="US ZIP code">
+        <button class="btn alt" type="submit">Go</button>
+      </form>
+    </div>
+    <p id="loc" role="status">Choose a location to see your forecast.</p>
+    <div class="sens">
+      <div class="lbl"><span>Low</span><b id="sensName">Moderate sensitivity</b><span>High</span></div>
+      <input type="range" id="sens" min="0" max="2" step="1" value="1" aria-label="Weather sensitivity">
+    </div>
+  </section>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-t="today">Today</button>
+    <button role="tab" aria-selected="false" data-t="hourly">Hourly</button>
+    <button role="tab" aria-selected="false" data-t="days">10-Day</button>
+  </div>
+
+  <section class="card" id="p-today"></section>
+  <section class="card hide" id="p-hourly"></section>
+  <section class="card hide" id="p-days"></section>
+  <div class="row"><button class="btn alt hide" id="rss">Download RSS feed</button></div>
+</main>
+
+<footer>
+  <p>I created this tool for my wife, who suffers from neuralgia, and for others who deal with the same. If it helps you and you are able, I would be grateful for a small donation at <a href="https://buymeacoffee.com/thenatedrake" target="_blank" rel="noopener">buymeacoffee.com/thenatedrake</a>.</p>
+  <p>Scores are estimates from weather patterns only, loosely based on Katsuki et al. (2023), <em>Headache</em>. They are not medical advice. Weather data from Open-Meteo.</p>
+</footer>
+
+<script>
+console.log('Created by C.M.D');
+
+/* ---------- Constants ---------- */
+const $ = s => document.querySelector(s);
+const clamp = (x, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, x));
+// Feature weights = information gain from the study
+const W = {drop:11.7, traj:10.1, hum:7.1, next:6.7, morn:4.6, low:3.9, rain:3.1};
+const WT = Object.values(W).reduce((a, b) => a + b);
+const NAMES = {drop:'Falling pressure (last 6h)', traj:'Multi-day pressure trend', hum:'High humidity',
+  next:'Low pressure tomorrow', morn:'High morning pressure', low:'Low pressure', rain:'Rainfall'};
+// [upper bound %, label, color]
+const LV = [[20,'Low','#2e9e4f'],[40,'Mild','#8cc63f'],[60,'Moderate','#f5b800'],[80,'High','#f07a1a'],[101,'Very high','#d7263d']];
+const lvl = p => LV.find(l => p < l[0]);
+const SENS = ['Low sensitivity', 'Moderate sensitivity', 'High sensitivity'];
+const F = /^en-US/.test(navigator.language);          // Fahrenheit for US locales
+let S = 1, D = null, M = null;                        // sensitivity, raw data, computed model
+
+/* ---------- Weather code -> [label, icon, scene category] ---------- */
+const WX = c => c == 0 ? ['Clear','â˜€ï¸','clear'] : c < 3 ? ['Partly cloudy','â›…','cloud'] : c == 3 ? ['Cloudy','â˜ï¸','cloud']
+  : c < 50 ? ['Fog','ðŸŒ«ï¸','fog'] : c < 60 ? ['Drizzle','ðŸŒ¦ï¸','rain'] : c < 70 ? ['Rain','ðŸŒ§ï¸','rain']
+  : c < 80 ? ['Snow','ðŸŒ¨ï¸','snow'] : c < 83 ? ['Showers','ðŸŒ¦ï¸','rain'] : c < 87 ? ['Snow showers','ðŸŒ¨ï¸','snow'] : ['Thunderstorms','â›ˆï¸','rain'];
+
+/* ---------- Risk model ---------- */
+// Scores one hour (index i of the hourly series) on a 0-10 scale, plus each feature's share
+function hourScore(H, i) {
+  const p = H.surface_pressure, n = p.length;
+  const g = k => p[clamp(k, 0, n - 1)];
+  const win = p.slice(Math.max(0, i - 144), i + 1);               // trailing 6-day window
+  const mean = win.reduce((a, b) => a + b) / win.length;
+  const f = {
+    drop: clamp((g(i - 6) - g(i)) / 6),                           // 6h drop, 6 hPa = max
+    traj: clamp((mean - g(i)) / 8),                               // below the 6-day average
+    hum:  clamp((H.relative_humidity_2m[i] - 50) / 40),
+    next: clamp((1015 - g(i + 24)) / 25),                         // low pressure 24h ahead
+    morn: clamp((g(Math.floor(i / 24) * 24 + 6) - 1013) / 15),    // 6 a.m. pressure that day
+    low:  clamp((1013 - g(i)) / 20),
+    rain: clamp(H.precipitation[i] / 2.5)                         // mm per hour
+  };
+  let sum = 0;
+  for (const k in W) sum += W[k] * f[k];
+  return {r: Math.min(10, sum / WT * 20), f};                     // x20 stretches the typical range to 0-10
+}
+// Sensitivity shifts the 0-10 score by -1 / 0 / +1, then converts to a percent
+const pct = r => Math.round(clamp(r + S - 1, 0, 10) * 10);
+
+function buildModel() {
+  const H = D.hourly, today = D.current.time.slice(0, 10);
+  const b = H.time.findIndex(t => t.startsWith(today));
+  const sc = H.time.map((_, i) => hourScore(H, i));
+  const days = [];
+  for (let k = 0; k < 10; k++) {
+    const s = b + k * 24, hrs = sc.slice(s, s + 24), rs = hrs.map(h => h.r);
+    const peak = hrs.reduce((m, h, i) => h.r > hrs[m].r ? i : m, 0);
+    days.push({k, s, hrs, raw: 0.5 * Math.max(...rs) + 0.5 * rs.reduce((a, c) => a + c) / 24, peak});
+  }
+  M = {b, sc, days};
+}
+
+/* ---------- Helpers ---------- */
+const hr = t => { const h = +t.slice(11, 13); return (h % 12 || 12) + (h < 12 ? 'am' : 'pm'); };
+const dayName = d => new Date(d + 'T12:00').toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
+const deg = v => Math.round(v) + 'Â°';
+const bar = p => `<div class="bar"><i style="width:${p}%;background:${lvl(p)[2]}"></i></div>`;
+
+/* ---------- Renderers ---------- */
+function render() {
+  buildModel();
+  const day = M.days[0], p = pct(day.raw), L = lvl(p);
+  const H = D.hourly, d = D.daily, di = d.time.indexOf(D.current.time.slice(0, 10));
+  const now = WX(d.weather_code[di]);
+  const hi = day.hrs[day.peak], drivers = Object.keys(W).map(k => [k, W[k] * hi.f[k] / WT]).filter(x => x[1] > .03)
+    .sort((a, b) => b[1] - a[1]).slice(0, 3).map(x => NAMES[x[0]]);
+  const dp = H.surface_pressure[M.b + day.peak] - H.surface_pressure[M.b + day.peak - 6];
+
+  // Today tab: big percentage first, weather details underneath
+  $('#p-today').innerHTML = `<div class="hero">
+    <div class="ring" style="--p:${p};--c:${L[2]}"><div><div class="big">${p}<small>%</small></div></div></div>
+    <div class="lvl">${L[1]} migraine risk today</div>
+    <div class="stats">
+      <div class="stat"><span>Conditions</span><b>${now[1]} ${now[0]}</b></div>
+      <div class="stat"><span>Now</span><b>${deg(D.current.temperature_2m)}</b></div>
+      <div class="stat"><span>High / Low</span><b>${deg(d.temperature_2m_max[di])} / ${deg(d.temperature_2m_min[di])}</b></div>
+      <div class="stat"><span>Chance of precipitation</span><b>${d.precipitation_probability_max[di] ?? 0}%</b></div>
+    </div>
+    <p class="why">${drivers.length ? 'Biggest factors: ' + drivers.join(', ') + '.' : 'No strong weather triggers today.'}
+    Peak risk around ${hr(H.time[M.b + day.peak])} (pressure ${dp > 0 ? '+' : ''}${dp.toFixed(1)} hPa over the prior 6 hours).</p></div>`;
+
+  // Hourly tab: the 24 hours of today
+  $('#p-hourly').innerHTML = day.hrs.map((h, i) => {
+    const j = M.b + i, q = pct(h.r), w = WX(H.weather_code[j]);
+    return `<div class="item"><div><b>${hr(H.time[j])}</b></div><span title="${w[0]}">${w[1]}</span>
+      <div>${bar(q)}<small>${deg(H.temperature_2m[j])} Â· ${H.precipitation_probability[j] ?? 0}% rain Â· ${lvl(q)[1]}</small></div>
+      <div class="pct">${q}%</div></div>`;
+  }).join('');
+
+  // 10-day tab
+  $('#p-days').innerHTML = M.days.map(x => {
+    const j = di + x.k, q = pct(x.raw), w = WX(d.weather_code[j]);
+    return `<div class="item"><div><b>${x.k ? dayName(d.time[j]).split(',')[0] : 'Today'}</b><small>${d.time[j].slice(5).replace('-', '/')}</small></div>
+      <span title="${w[0]}">${w[1]}</span>
+      <div>${bar(q)}<small>${deg(d.temperature_2m_max[j])} / ${deg(d.temperature_2m_min[j])} Â· ${d.precipitation_probability_max[j] ?? 0}% rain Â· ${lvl(q)[1]}</small></div>
+      <div class="pct">${q}%</div></div>`;
+  }).join('');
+
+  $('#rss').classList.remove('hide');
+  paintScene(now[2]);
+}
+
+/* ---------- Scene: biome, holiday, time of day, weather ---------- */
+function holiday(hourNow) {
+  const t = new Date(D.current.time.slice(0, 10) + 'T00:00'), y = t.getFullYear();
+  const nth = (yr, m, dow, n) => { const d = new Date(yr, m, 1); d.setDate(1 + (dow - d.getDay() + 7) % 7 + 7 * (n - 1)); return d; };
+  const list = [];
+  for (const yr of [y, y + 1])
+    list.push(['halloween', new Date(yr, 9, 31)], ['thanks', nth(yr, 10, 4, 4)], ['xmas', new Date(yr, 11, 25)],
+      ['fire', new Date(yr, 0, 1)], ['love', new Date(yr, 1, 14)], ['fire', new Date(yr, 6, 4)]);
+  const next = list.filter(h => h[1] >= t).sort((a, b) => a[1] - b[1])[0];
+  return (next[1] - t) / 864e5 <= 35 ? next[0] : null;            // only within 35 days
+}
+function pine(x, y, s, snow, lights) {
+  let g = `<g transform="translate(${x},${y}) scale(${s})"><rect x="-4" y="0" width="8" height="12" fill="#5b3a29"/>`;
+  const tiers = [[0,-78,24,-40],[0,-58,32,-14],[0,-34,40,6]];
+  tiers.forEach(t => { g += `<polygon points="${t[0]},${t[1]} ${-t[2]},${t[3]} ${t[2]},${t[3]}" fill="var(--tree)"/>`; });
+  if (snow) tiers.forEach(t => { g += `<polygon points="${t[0]},${t[1]} ${-t[2] * .45},${t[1] + (t[3] - t[1]) * .45} ${t[2] * .45},${t[1] + (t[3] - t[1]) * .45}" fill="#fff"/>`; });
+  if (lights) [[-10,-50],[12,-54],[-22,-22],[0,-30],[22,-20],[-30,0],[10,-6],[30,2]].forEach((c, i) =>
+    g += `<circle class="tw" style="animation-delay:${i * .3}s" cx="${c[0]}" cy="${c[1]}" r="3.2" fill="${i % 2 ? '#fff' : '#6ec1ff'}"/>`);
+  return g + '</g>';
+}
+const turkey = (x, y) => `<g transform="translate(${x},${y})"><g class="pop">
+  ${[[-22,-10,'#c0392b'],[-12,-24,'#e67e22'],[0,-28,'#f1c40f'],[12,-24,'#e67e22'],[22,-10,'#c0392b']].map(f => `<circle cx="${f[0]}" cy="${f[1]}" r="9" fill="${f[2]}"/>`).join('')}
+  <circle r="15" fill="#8b5a2b"/><circle cx="10" cy="-9" r="6" fill="#8b5a2b"/><circle cx="13" cy="-4" r="2.5" fill="#d7263d"/>
+  <polygon points="15,-10 21,-8 15,-7" fill="#f5b800"/><circle cx="11" cy="-11" r="1.2" fill="#000"/></g></g>`;
+
+function paintScene(cat) {
+  const hour = +D.current.time.slice(11, 13), night = hour < 5 || hour >= 21;
+  const phase = night ? 'night' : hour < 8 ? 'dawn' : hour < 17 ? 'day' : hour < 21 ? 'dusk' : 'night';
+  const pal = {night:['#0b1530','#26356b','#2a3558','#1c2747','#17402f','#6f9bff'], dawn:['#6c7fd1','#ffc9a3','#8a78a8','#6f7aa6','#2f6b4c','#ff8a5c'],
+    day:['#4ea8de','#d4ecff','#7a93b8','#5f9a6a','#2f7d4f','#2f6fed'], dusk:['#3b2a63','#f08a5d','#7a5a86','#4a3d6b','#27553f','#e0663f']}[phase];
+  const dark = night || matchMedia('(prefers-color-scheme: dark)').matches;
+  document.body.classList.toggle('dark', dark);
+  document.documentElement.style.setProperty('--accent', cat === 'clear' || phase !== 'day' ? pal[5] : '#4a6fa5');
+
+  // Pick the biome from coordinates and elevation
+  const {lat, lon} = D, el = D.elevation;
+  const biome = lat > 41.5 && lat < 49.5 && lon > -125 && lon < -116 ? 'pnw' : el > 1000 ? 'mountain' : 'hills';
+  const hol = holiday(), snow = cat === 'snow', lights = hol === 'xmas';
+  const gray = ['rain', 'snow', 'fog'].includes(cat) || cat === 'cloud';
+  let s = `<svg viewBox="0 0 800 280" preserveAspectRatio="xMidYMax slice" style="--tree:${pal[4]}">
+    <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${pal[0]}"/><stop offset="1" stop-color="${pal[1]}"/></linearGradient></defs>
+    <rect width="800" height="280" fill="url(#sky)"/>`;
+  if (night) for (let i = 0; i < 26; i++) s += `<circle class="tw" style="animation-delay:${i * .2}s" cx="${(i * 97) % 800}" cy="${(i * 53) % 130 + 10}" r="1.4" fill="#fff"/>`;
+  if (cat === 'clear' || cat === 'cloud') s += night ? `<circle cx="680" cy="70" r="22" fill="#f3f1d8"/>` : `<circle cx="${phase === 'day' ? 660 : 700}" cy="${phase === 'day' ? 70 : 150}" r="28" fill="#ffd54a"/>`;
+  if (cat !== 'clear') [[120,60],[380,40],[600,85]].forEach(c => s += `<g fill="${gray ? '#9aa6b5' : '#fff'}" opacity=".9"><ellipse cx="${c[0]}" cy="${c[1]}" rx="60" ry="18"/><ellipse cx="${c[0] + 30}" cy="${c[1] - 14}" rx="38" ry="16"/></g>`);
+  if (hol === 'fire' || hol === 'halloween') s += `<text class="bob" x="120" y="150" font-size="34">${hol === 'fire' ? 'ðŸŽ†' : 'ðŸŽƒ'}</text>`;
+  if (biome !== 'hills') {                                       // mountains with snow caps
+    s += `<polygon points="0,220 150,120 250,180 380,60 520,200 640,110 800,220" fill="${pal[2]}"/>
+      <polygon points="380,60 350,95 372,88 385,104 405,86 420,96" fill="#fff" opacity=".9"/>
+      <polygon points="640,110 618,138 636,132 650,144 664,130" fill="#fff" opacity=".9"/>`;
+  } else {                                                       // rolling hills, lake and river
+    s += `<path d="M0 200 Q150 120 300 190 T600 170 T800 190 V280 H0Z" fill="${pal[2]}"/>
+      <path d="M0 225 Q200 170 400 220 T800 205 V280 H0Z" fill="${pal[3]}"/>
+      <ellipse cx="560" cy="238" rx="90" ry="16" fill="#5aa9d6" opacity=".9"/><ellipse cx="540" cy="234" rx="40" ry="4" fill="#fff" opacity=".35"/>
+      <path d="M150 226 C190 238 150 252 200 262 S260 272 300 280" stroke="#5aa9d6" stroke-width="9" fill="none"/>`;
+  }
+  s += `<path d="M0 232 Q200 214 400 232 T800 226 V280 H0Z" fill="${pal[3]}"/>`;
+  if (hol === 'thanks') s += turkey(470, 232);                    // peeks out from behind the trees
+  const xs = biome === 'pnw' ? [30,90,160,230,330,420,520,600,690,760] : biome === 'mountain' ? [60,200,420,640,740] : [90,300,430,700];
+  xs.forEach((x, i) => s += pine(x, 236 + (i % 3) * 8, .62 + (i % 4) * .12, snow, lights));
+  if (snow) s += `<path d="M0 262 Q200 248 400 262 T800 256 V280 H0Z" fill="#fff" opacity=".9"/>`;
+  if (gray) s += `<rect width="800" height="280" fill="#445" opacity="${cat === 'cloud' ? .12 : .25}"/>`;
+  $('#scene').querySelector('svg')?.remove();
+  $('#scene').insertAdjacentHTML('afterbegin', s + '</svg>');
+
+  // Falling rain / snow and floating hearts
+  const fx = $('#fx'); fx.innerHTML = '';
+  const kind = cat === 'rain' ? 'rain' : snow ? 'snow' : hol === 'love' ? 'heart' : null;
+  for (let i = 0; kind && i < (kind === 'heart' ? 8 : 55); i++) {
+    const e = document.createElement('div');
+    e.className = kind; if (kind === 'heart') e.textContent = 'â¤ï¸';
+    e.style.cssText = `left:${Math.random() * 100}%;animation-duration:${kind === 'rain' ? .8 + Math.random() * .6 : 3 + Math.random() * 4}s;animation-delay:${-Math.random() * 5}s`;
+    fx.appendChild(e);
+  }
+}
+
+/* ---------- Data loading ---------- */
+async function load(lat, lon, name) {
+  $('#loc').textContent = 'Loading forecastâ€¦';
+  const q = 'hourly=temperature_2m,relative_humidity_2m,precipitation,precipitation_probability,surface_pressure,weather_code'
+    + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&current=temperature_2m,weather_code'
+    + `&past_days=7&forecast_days=11&timezone=auto&temperature_unit=${F ? 'fahrenheit' : 'celsius'}`;
+  try {
+    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&${q}`);
+    D = await r.json();
+    if (D.error) throw new Error(D.reason);
+    D.lat = lat; D.lon = lon; D.place = name;
+    $('#loc').textContent = name;
+    render();
+    try { localStorage.setItem('loc', JSON.stringify([lat, lon, name])); } catch (e) {}
+  } catch (e) { $('#loc').textContent = 'Could not load the forecast. Check your connection and try again.'; }
+}
+async function byZip(z) {
+  try {
+    const r = await fetch(`https://api.zippopotam.us/us/${z}`);
+    if (!r.ok) throw 0;
+    const p = (await r.json()).places[0];
+    load(+p.latitude, +p.longitude, `${p['place name']}, ${p['state abbreviation']}`);
+  } catch (e) { $('#loc').textContent = 'ZIP code not found. Enter a valid 5-digit US ZIP.'; }
+}
+
+/* ---------- RSS: builds a feed file from the current forecast ---------- */
+const esc = s => String(s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+function rss() {
+  const items = M.days.map(x => {
+    const j = D.daily.time.indexOf(D.current.time.slice(0, 10)) + x.k, q = pct(x.raw), w = WX(D.daily.weather_code[j]);
+    return `<item><title>${esc(dayName(D.daily.time[j]))}: ${q}% (${lvl(q)[1]})</title><guid isPermaLink="false">${D.daily.time[j]}-${esc(D.place)}-${S}</guid>
+<pubDate>${new Date(D.daily.time[j] + 'T06:00:00Z').toUTCString()}</pubDate>
+<description>${esc(`${w[0]}, high ${deg(D.daily.temperature_2m_max[j])}, low ${deg(D.daily.temperature_2m_min[j])}, ${D.daily.precipitation_probability_max[j] ?? 0}% chance of precipitation`)}</description></item>`;
+  }).join('\n');
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel><title>Migraine Forecast: ${esc(D.place)}</title>
+<link>${esc(location.href.split('#')[0])}</link><description>10-day weather-based migraine risk</description>\n${items}\n</channel></rss>`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([xml], {type: 'application/rss+xml'}));
+  a.download = 'migraine-forecast.xml'; a.click();
+}
+
+/* ---------- Events ---------- */
+$('#geo').onclick = () => navigator.geolocation
+  ? navigator.geolocation.getCurrentPosition(p => load(+p.coords.latitude.toFixed(3), +p.coords.longitude.toFixed(3), 'Your location'),
+      () => $('#loc').textContent = 'Location blocked. Enter your ZIP code instead.')
+  : $('#loc').textContent = 'Location is not available here. Enter your ZIP code instead.';
+$('#zipForm').onsubmit = e => { e.preventDefault(); byZip($('#zip').value.trim()); };
+$('#sens').oninput = e => {
+  S = +e.target.value; $('#sensName').textContent = SENS[S];
+  try { localStorage.setItem('sens', S); } catch (x) {}
+  if (D && D.hourly) render();
+};
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+  ['today', 'hourly', 'days'].forEach(t => $('#p-' + t).classList.toggle('hide', t !== b.dataset.t));
+});
+$('#rss').onclick = rss;
+
+/* ---------- Start: restore saved sensitivity and location ---------- */
+try { S = +(localStorage.getItem('sens') ?? 1); $('#sens').value = S; $('#sensName').textContent = SENS[S]; } catch (e) {}
+(() => {
+  const z = new URLSearchParams(location.search).get('zip');           // e.g. ?zip=98101
+  if (z) return byZip(z);
+  try { const s = JSON.parse(localStorage.getItem('loc')); if (s) return load(...s); } catch (e) {}
+  D = {current: {time: new Date().toISOString().slice(0, 13) + ':00'}, lat: 47.6, lon: -122.3, elevation: 50};
+  paintScene('clear');                                                 // default scene until a location is chosen
+})();
+</script>
+</body>
+</html>
