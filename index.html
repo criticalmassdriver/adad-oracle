@@ -412,6 +412,7 @@ function skeleton() {
 function advice(detail) {
   const d = String(detail || '');
   if (/403|429|rate limit/i.test(d)) return 'A VPN, proxy or shared network can trigger this. Turn the VPN off and try again.';
+  if (/Timed out/i.test(d)) return 'The request was sent but nothing came back, which is what a VPN, DNS filter or firewall looks like. Try another network or turn the VPN off.';
   if (/Network error/i.test(d)) return 'The request never left your browser. Check a VPN, DNS filter or ad-blocker, then try again.';
   if (/not JSON|incomplete/i.test(d)) return 'Something between you and the weather API replaced the reply, often a captive portal or proxy.';
   if (/draw/i.test(d)) return 'This one is a bug in the page itself, not your connection.';
@@ -432,6 +433,25 @@ function failed(msg, detail, label) {                                 // detail 
   const b = $('#retry');
   if (b) b.onclick = () => { if (lastAsk) load(lastAsk[0], lastAsk[1], lastAsk[2]); };
 }
+// A fetch that always reaches a verdict. A network that silently drops packets (VPN, DNS filter,
+// a blocked CDN address) leaves fetch hanging for minutes without ever rejecting, so the page
+// would sit on "Loading forecast" and never try the backup. Every request here gives up after a
+// fixed time and hands control back to the caller.
+async function tfetch(url, opts, ms) {
+  if (opts && opts.signal) return fetch(url, opts);                 // caller manages its own deadline
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), ms || 9000);
+  try {
+    return await fetch(url, Object.assign({}, opts, {signal: ac.signal}));
+  } catch (e) {
+    if (e && e.name === 'AbortError') {
+      const t = new Error('Timed out after ' + Math.round((ms || 9000) / 1000) + 's');
+      t.name = 'TimeoutError';
+      throw t;
+    }
+    throw e;
+  } finally { clearTimeout(timer); }
+}
 // One fetch helper for every call: retries hiccups, surfaces the real reason on failure
 async function getJSON(url, tries = 2) {
   for (let n = 0; ; n++) {
@@ -440,8 +460,8 @@ async function getJSON(url, tries = 2) {
       // 'reload' is a valid mode everywhere current, but some older Safari and a few embedded
       // webviews reject it by throwing, which then looks identical to being offline. Fall back to
       // a plain fetch before believing the network is at fault.
-      try { r = await fetch(url, {cache: 'no-store'}); }
-      catch (e1) { r = await fetch(url); }
+      try { r = await tfetch(url, {cache: 'no-store'}, 9000); }
+      catch (e1) { r = await tfetch(url, undefined, 9000); }
     } catch (e) {                                                   // blocked, offline, DNS, VPN, extension
       if (n >= tries) throw new Error('Network error: ' + (e && e.message ? e.message : 'request blocked') + ' (' + ((e && e.name) || 'Error') + ')');
       await new Promise(s => setTimeout(s, 700 * (n + 1)));
@@ -472,7 +492,9 @@ const pad2 = n => String(n).padStart(2, '0');
 const localISO = ms => { const d = new Date(ms);
   return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + 'T' + pad2(d.getHours()) + ':00'; };
 async function metForecast(lat, lon) {
-  const r = await fetch('https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=' + lat + '&lon=' + lon);
+  let r;
+  try { r = await tfetch('https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=' + lat + '&lon=' + lon, undefined, 10000); }
+  catch (e) { throw new Error('MET Norway unreachable (' + (e.message || 'request blocked') + ')'); }
   if (!r.ok) throw new Error('MET Norway HTTP ' + r.status);
   const j = await r.json();
   const ts = j && j.properties && j.properties.timeseries;
@@ -543,7 +565,7 @@ async function load(lat, lon, name, cc) {
     + `&past_days=7&forecast_days=11&timezone=auto&temperature_unit=${F ? 'fahrenheit' : 'celsius'}`;
   let data;
   try {
-    data = await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&${q}`);
+    data = await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&${q}`, 0);
   } catch (e) {
     // One host is blocked or down. Ask the backup rather than declaring the forecast unavailable.
     $('#loc').textContent = 'Trying a second weather service\u2026';
@@ -574,7 +596,7 @@ async function load(lat, lon, name, cc) {
 // BigDataCloud's free client endpoint allows cross-origin calls and needs no key.
 async function refinePlace(lat, lon) {
   try {
-    const r = await fetch('https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=' + lat + '&longitude=' + lon + '&localityLanguage=en');
+    const r = await tfetch('https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=' + lat + '&longitude=' + lon + '&localityLanguage=en', undefined, 8000);
     if (!r.ok) return;
     const g = await r.json();
     if (!g) return;
@@ -679,7 +701,7 @@ async function getResJSON(path) {
   let last = null;
   for (const p of paths) {
     try {
-      const r = await fetch(p, {cache: 'no-cache'});
+      const r = await tfetch(p, {cache: 'no-cache'}, 8000);
       if (r.ok) return await r.json();
       last = new Error(p + ' returned HTTP ' + r.status);
     } catch (e) { last = new Error(p + ': ' + (e && e.message ? e.message : 'request failed')); }
@@ -753,7 +775,7 @@ async function findCounty(lat, lon) {
   let out = null;
   // FCC first: one request, CORS open, returns everything we need.
   try {
-    const r = await fetch('https://geo.fcc.gov/api/census/area?lat=' + lat + '&lon=' + lon + '&format=json');
+    const r = await tfetch('https://geo.fcc.gov/api/census/area?lat=' + lat + '&lon=' + lon + '&format=json', undefined, 6000);
     if (r.ok) {
       const j = await r.json(), a = (j.results || [])[0];
       if (a && a.county_name) out = {county: a.county_name, state: a.state_code, fips: a.county_fips};
@@ -761,7 +783,7 @@ async function findCounty(lat, lon) {
   } catch (e) {}
   // TIGERweb is the Census Bureau's own boundary service, and also sends CORS headers.
   if (!out) try {
-    const r = await fetch('https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/1/query?geometry=' + lon + ',' + lat + '&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=NAME,STATE&returnGeometry=false&f=json');
+    const r = await tfetch('https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/1/query?geometry=' + lon + ',' + lat + '&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=NAME,STATE&returnGeometry=false&f=json', undefined, 6000);
     if (r.ok) {
       const j = await r.json(), a = ((j.features || [])[0] || {}).attributes;
       if (a && a.NAME) out = {county: a.NAME, state: '', fips: a.STATE || ''};
