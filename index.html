@@ -294,6 +294,7 @@ function render() {
       <div class="stat"><span>High / Low</span><b>${deg(d.temperature_2m_max[di])} / ${deg(d.temperature_2m_min[di])}</b></div>
       <div class="stat"><span>Chance of precipitation</span><b>${d.precipitation_probability_max[di] || 0}%</b></div>
     </div>
+    ${D.src ? `<p class="why" style="opacity:.7">Forecast from ${esc(D.src)}: the usual source could not be reached from this connection.</p>` : ''}
     <p class="why">${drivers.length ? 'Biggest factors: ' + drivers.join(', ') + '.' : 'No strong weather triggers today.'}
     Peak risk around ${hr(H.time[M.b + day.peak])} (pressure ${dp > 0 ? '+' : ''}${dp.toFixed(1)} hPa over the prior 6 hours).</p></div>`;
   drawRing(p);
@@ -423,6 +424,10 @@ function failed(msg, detail, label) {                                 // detail 
     ${msg || 'The weather service did not answer. Check your connection and try again.'}</p>
     ${detail ? `<p class="why" style="text-align:center;opacity:.65;font-size:.8rem">${esc(detail)}</p>` : ''}
     ${hint ? `<p class="why" style="text-align:center;font-size:.85rem">${esc(hint)}</p>` : ''}
+    ${/Network error/i.test(String(detail || '')) ? `<p class="why" style="text-align:center;font-size:.82rem;opacity:.8">
+      To tell a block from a glitch, open these two links in the same browser: <a href="https://api.open-meteo.com/v1/forecast?latitude=47.04&longitude=-122.82&hourly=surface_pressure&forecast_days=1" target="_blank" rel="noopener">the weather API</a>
+      and <a href="https://api.zippopotam.us/us/98503" target="_blank" rel="noopener">the ZIP lookup</a>.
+      JSON on screen means the browser is fine; an error page means something is blocking that domain.</p>` : ''}
     <button class="btn alt" id="retry">Try again</button></div>`;
   const b = $('#retry');
   if (b) b.onclick = () => { if (lastAsk) load(lastAsk[0], lastAsk[1], lastAsk[2]); };
@@ -432,9 +437,13 @@ async function getJSON(url, tries = 2) {
   for (let n = 0; ; n++) {
     let r;
     try {
-      r = await fetch(url, {cache: 'reload'});
+      // 'reload' is a valid mode everywhere current, but some older Safari and a few embedded
+      // webviews reject it by throwing, which then looks identical to being offline. Fall back to
+      // a plain fetch before believing the network is at fault.
+      try { r = await fetch(url, {cache: 'no-store'}); }
+      catch (e1) { r = await fetch(url); }
     } catch (e) {                                                   // blocked, offline, DNS, VPN, extension
-      if (n >= tries) throw new Error('Network error: ' + (e && e.message ? e.message : 'request blocked'));
+      if (n >= tries) throw new Error('Network error: ' + (e && e.message ? e.message : 'request blocked') + ' (' + ((e && e.name) || 'Error') + ')');
       await new Promise(s => setTimeout(s, 700 * (n + 1)));
       continue;
     }
@@ -452,6 +461,80 @@ async function getJSON(url, tries = 2) {
     throw new Error(r.status === 429 ? 'HTTP 429, rate limited. Wait a minute, then try again.' : 'HTTP ' + r.status);
   }
 }
+/* ---------- Fallback weather source ---------- */
+// Some networks block a single weather host outright: VPNs, DNS filters, a few mobile carriers.
+// MET Norway's public API is keyless, allows cross-origin calls and covers the whole world, so a
+// block on Open-Meteo should cost hourly detail, not the whole forecast.
+const SYM = [[/thunder/, 95], [/heavyrain/, 65], [/rain/, 63], [/drizzle/, 61], [/sleet/, 73],
+  [/snow/, 71], [/fog/, 45], [/cloudy/, 3], [/fair|partlycloudy/, 2], [/clearsky/, 0]];
+const symCode = s => { for (const [re, c] of SYM) if (re.test(String(s || ''))) return c; return 3; };
+const pad2 = n => String(n).padStart(2, '0');
+const localISO = ms => { const d = new Date(ms);
+  return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + 'T' + pad2(d.getHours()) + ':00'; };
+async function metForecast(lat, lon) {
+  const r = await fetch('https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=' + lat + '&lon=' + lon);
+  if (!r.ok) throw new Error('MET Norway HTTP ' + r.status);
+  const j = await r.json();
+  const ts = j && j.properties && j.properties.timeseries;
+  if (!ts || ts.length < 24) throw new Error('MET Norway sent no hourly data');
+  const elev = (j.geometry && j.geometry.coordinates && +j.geometry.coordinates[2]) || 0;
+  // The risk model is calibrated on pressure at the ground, so reduce sea-level pressure to it
+  const ratio = Math.pow(1 - 2.25577e-5 * elev, 5.25588);
+  const pts = [];
+  for (const x of ts) {
+    const d = x.data.instant.details;
+    if (d.air_pressure_at_sea_level == null) continue;
+    const n1 = x.data.next_1_hours, n6 = x.data.next_6_hours;
+    const mm = n1 ? n1.details.precipitation_amount : (n6 ? n6.details.precipitation_amount / 6 : 0);
+    const sym = n1 ? n1.summary.symbol_code : (n6 ? n6.summary.symbol_code : '');
+    pts.push({t: Date.parse(x.time), p: d.air_pressure_at_sea_level * ratio, tp: d.air_temperature,
+      rh: d.relative_humidity, mm: mm || 0, sym});
+  }
+  if (pts.length < 24) throw new Error('MET Norway sent no usable hourly data');
+  const at = (v, t) => {                       // hourly for the first days, six-hourly further out
+    let a = pts[0], b = pts[pts.length - 1];
+    for (const x of pts) { if (x.t <= t) a = x; if (x.t >= t) { b = x; break; } }
+    if (b.t === a.t) return v(a);
+    return v(a) + (v(b) - v(a)) * ((t - a.t) / (b.t - a.t));
+  };
+  const near = t => pts.reduce((m, x) => (x.t <= t && (!m || x.t > m.t) ? x : m), null) || pts[0];
+  const mid = new Date(); mid.setHours(0, 0, 0, 0);
+  const t0 = mid.getTime() - 6 * 36e5;         // six hours of run-up so the 6h drop has a comparison
+  const end = pts[pts.length - 1].t + 24 * 36e5;
+  const time = [], press = [], temp = [], humid = [], prec = [], prob = [], code = [];
+  for (let t = t0; t <= end && time.length < 275; t += 36e5) {
+    const n = near(t);
+    time.push(localISO(t));
+    press.push(+at(x => x.p, t).toFixed(2));
+    temp.push(+(at(x => x.tp, t) * (F ? 9 / 5 : 1) + (F ? 32 : 0)).toFixed(2));   // match the unit the page is showing
+    humid.push(Math.round(at(x => x.rh, t)));
+    prec.push(+(n.mm || 0).toFixed(2));
+    prob.push(Math.min(95, Math.round((n.mm || 0) * 100)));    // amount stands in for a probability
+    code.push(symCode(n.sym));
+  }
+  const dmap = new Map();
+  time.forEach((s, i) => { const k = s.slice(0, 10); if (!dmap.has(k)) dmap.set(k, []); dmap.get(k).push(i); });
+  // Keep every day in the series: a forecast that starts today needs the extra entries so the
+  // 10-day tab still has a date for its last row.
+  const dt = [...dmap.keys()].slice(0, 14);
+  const daily = {time: dt, weather_code: [], temperature_2m_max: [], temperature_2m_min: [], precipitation_probability_max: []};
+  for (const k of dt) {
+    const ix = dmap.get(k);
+    daily.temperature_2m_max.push(Math.max(...ix.map(i => temp[i])));
+    daily.temperature_2m_min.push(Math.min(...ix.map(i => temp[i])));
+    daily.precipitation_probability_max.push(Math.max(...ix.map(i => prob[i])));
+    const noon = ix.reduce((m, i) => Math.abs(+time[i].slice(11, 13) - 12) < Math.abs(+time[m].slice(11, 13) - 12) ? i : m, ix[0]);
+    daily.weather_code.push(code[noon]);
+  }
+  const today = localISO(Date.now()).slice(0, 10);
+  const b = Math.max(0, time.findIndex(s => s === today + 'T00:00'));   // local midnight, where buildModel starts
+  const ci = Math.min(time.length - 1, b + new Date().getHours());
+  return {hourly: {time, temperature_2m: temp, relative_humidity_2m: humid, precipitation: prec,
+      precipitation_probability: prob, surface_pressure: press, weather_code: code},
+    daily, current: {time: time[ci], temperature_2m: temp[ci], weather_code: code[ci]},
+    elevation: elev, lat, lon, src: 'MET Norway'};
+}
+
 async function load(lat, lon, name, cc) {
   lastAsk = [lat, lon, name, cc];
   $('#loc').textContent = 'Loading forecast\u2026';
@@ -461,7 +544,12 @@ async function load(lat, lon, name, cc) {
   let data;
   try {
     data = await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&${q}`);
-  } catch (e) { return failed(undefined, e.message); }
+  } catch (e) {
+    // One host is blocked or down. Ask the backup rather than declaring the forecast unavailable.
+    $('#loc').textContent = 'Trying a second weather service\u2026';
+    try { data = await metForecast(lat, lon); }
+    catch (e2) { return failed(undefined, e.message + ' \u2014 backup: ' + e2.message); }
+  }
   D = data;
   if (!D.hourly || !D.daily || !D.hourly.time || !D.daily.time)
     return failed('The weather service sent an incomplete response.', 'no hourly/daily series in the reply');
@@ -584,10 +672,19 @@ let RES = null, REGION = null, resFilter = '', resOpen = false, resPrev = '';
 // so live lookups expire and get asked for again rather than being trusted forever.
 const readCache = (k, v, ttl) => { try { const c = JSON.parse(localStorage.getItem(k)); if (!c || !c.body) return null; if (v && c.body.version !== v) return null; if (ttl && c.t && Date.now() - c.t > ttl) return null; return c.body; } catch (e) {} return null; };
 const writeCache = (k, d) => { try { localStorage.setItem(k, JSON.stringify({body: d, t: Date.now()})); } catch (e) {} };
+// Looks in resources/ first, then beside the page, so the data works whether or not
+// the folder survived the upload. A 404 on one path is not a failure if the other answers.
 async function getResJSON(path) {
-  const r = await fetch(path, {cache: 'no-cache'});
-  if (!r.ok) throw new Error(path + ' returned HTTP ' + r.status);
-  return r.json();
+  const paths = path.indexOf('resources/') === 0 ? [path, path.slice(10)] : ['resources/' + path, path];
+  let last = null;
+  for (const p of paths) {
+    try {
+      const r = await fetch(p, {cache: 'no-cache'});
+      if (r.ok) return await r.json();
+      last = new Error(p + ' returned HTTP ' + r.status);
+    } catch (e) { last = new Error(p + ': ' + (e && e.message ? e.message : 'request failed')); }
+  }
+  throw last || new Error('resource list not found');
 }
 async function loadIndex() {
   if (RES) return RES;
