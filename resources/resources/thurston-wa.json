@@ -1,0 +1,259 @@
+{
+ "version": 2,
+ "updated": "2026-11-16",
+ "name": "Thurston County, Washington",
+ "state": "WA",
+ "country": "US",
+ "bbox": [
+  -123.22,
+  46.86,
+  -122.24,
+  47.2
+ ],
+ "source": "Compiled locally, November 2026. Verify hours and eligibility by phone before travelling.",
+ "categories": [
+  {
+   "id": "navigation",
+   "label": "Start here: general navigation",
+   "items": [
+    {
+     "name": "Washington 211",
+     "phone": "211 or 1-877-211-9274",
+     "url": "https://wa211.org",
+     "notes": "Master directory. Routes you to emergency rent help, utility assistance and local nonprofits."
+    },
+    {
+     "name": "Lewis-Mason-Thurston Area Agency on Aging (LMTAAA)",
+     "phone": "(360) 664-2168",
+     "address": "2404 Heritage Ct SW, Suite A, Olympia",
+     "notes": "The local Aging and Disability Resource Center (ADRC). Serves adults with disabilities as well as older adults. Help navigating long-term care and caregiver support."
+    },
+    {
+     "name": "Center for Independence (CFI)",
+     "phone": "(253) 582-1253 or 1-888-482-4839",
+     "notes": "Run by people with disabilities. Independent living skills, peer support, advocacy, finding and training attendants."
+    },
+    {
+     "name": "DSHS Home and Community Services (HCS) / Developmental Disabilities Administration (DDA)",
+     "notes": "Intake assessment for state-funded Medicaid long-term care, in-home caregivers, or developmental disability case management."
+    },
+    {
+     "name": "South Sound Parent to Parent (SSP2P)",
+     "phone": "(360) 352-1126",
+     "address": "2108 Caton Way SW, Olympia",
+     "notes": "Family and parent peer support when the disability involves a child or young adult."
+    }
+   ]
+  },
+  {
+   "id": "housing",
+   "label": "Housing & utilities",
+   "items": [
+    {
+     "name": "Housing Authority of Thurston County (HATC)",
+     "phone": "(360) 753-8292",
+     "address": "1206 12th Ave SE, Olympia",
+     "notes": "Section 8 and Project-Based Vouchers. Documented disability gets priority preference on several waitlists. Also handles reasonable accommodation requests."
+    },
+    {
+     "name": "Thurston County Coordinated Entry",
+     "notes": "Single intake system for rapid rehousing, emergency shelter and permanent supportive housing. Use this first if housing is an immediate crisis."
+    },
+    {
+     "name": "Community Action Council (CAC)",
+     "phone": "(360) 438-1100",
+     "address": "3020 Willamette Dr NE, Lacey",
+     "notes": "LIHEAP energy and heating bill assistance, weatherization, housing stabilisation programs."
+    }
+   ]
+  },
+  {
+   "id": "transportation",
+   "label": "Transportation",
+   "items": [
+    {
+     "name": "Intercity Transit, fixed routes",
+     "notes": "All regular buses in Olympia, Lacey, Tumwater and Yelm are fare-free and wheelchair accessible."
+    },
+    {
+     "name": "Intercity Transit Dial-A-Lift",
+     "phone": "(360) 786-8585",
+     "notes": "Door-to-door paratransit van service if a disability keeps you off fixed-route buses. Requires an eligibility application.",
+     "tags": [
+      "eligibility-required"
+     ]
+    },
+    {
+     "name": "Paratransit Services (Medicaid non-emergency medical transport)",
+     "phone": "1-800-846-5438",
+     "notes": "Free rides, or gas and mileage reimbursement, to covered medical, dental and behavioral health appointments if you have Apple Health. Book at least two business days ahead.",
+     "tags": [
+      "book-ahead",
+      "apple-health"
+     ]
+    },
+    {
+     "name": "Village Vans",
+     "phone": "(360) 705-5832",
+     "notes": "Free rides for job-related travel: interviews, training, getting to work. For low-income riders."
+    }
+   ]
+  },
+  {
+   "id": "caregiving",
+   "label": "Caregiving & in-home care",
+   "items": [
+    {
+     "name": "COPES / Community First Choice (via DSHS)",
+     "notes": "If you qualify financially and medically for Medicaid long-term care, the state pays for an Individual Provider (a friend or family member you choose and hire) or an agency caregiver for bathing, dressing, cooking, cleaning and errands.",
+     "tags": [
+      "medicaid"
+     ]
+    },
+    {
+     "name": "Catholic Community Services (CCS) Home Care",
+     "phone": "1-877-870-1582",
+     "notes": "State-trained home care aides for personal care, housework and errands. Accepts DSHS Medicaid and private pay."
+    },
+    {
+     "name": "Family Caregiver Support Program (via LMTAAA)",
+     "phone": "(360) 664-2168",
+     "notes": "Respite care, support groups and limited supplemental supplies if a friend or family member is caring for you unpaid."
+    },
+    {
+     "name": "Private-pay home care agencies",
+     "notes": "Comfort Keepers (360) 742-3773, Visiting Angels and ResCare HomeCare all operate locally, for out-of-pocket pay or long-term care insurance."
+    }
+   ]
+  },
+  {
+   "id": "medical",
+   "label": "Home health & free medical equipment",
+   "items": [
+    {
+     "name": "Medical Equipment Bank (Thurston County Council on Aging)",
+     "phone": "(360) 456-8810",
+     "address": "2704 Pacific Ave SE, Olympia",
+     "hours": "Tue, Thu and Sat, 11:00 AM to 2:00 PM",
+     "notes": "Free donated wheelchairs, walkers, shower chairs, hospital beds and incontinence supplies. First come, first served. Go in person and fill out a short form.",
+     "tags": [
+      "no-cost",
+      "walk-in"
+     ]
+    },
+    {
+     "name": "Skilled home health agencies",
+     "notes": "Providence SoundHomeCare and Hospice (360) 459-8311, MultiCare Home Health, and Assured Home Health. In-home nursing, physical therapy, occupational therapy or wound care ordered by a doctor. Covered by Medicare or Medicaid.",
+     "tags": [
+      "doctor-referral"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "food",
+   "label": "Food banks & home delivery",
+   "items": [
+    {
+     "name": "Thurston County Food Bank (TCFB)",
+     "phone": "(360) 352-8597",
+     "notes": "Olympia pantry: 220 Thurston Ave NE, Mon/Wed/Fri 10:30 AM to 3:00 PM, free meter parking on distribution days. Lacey pantry: 7027 Martin Way E, Tue and Thu 10:00 AM to 2:00 PM, plus 2nd and 4th Wed 5:00 to 6:30 PM. Ask for the Satellite Coordinator about volunteer home delivery if you are homebound. They also stock ready-to-eat no-cook bags and Ensure or Boost if you ask.",
+     "tags": [
+      "homebound-delivery",
+      "ask-for",
+      "ensure-boost"
+     ]
+    },
+    {
+     "name": "City Gates Ministries",
+     "phone": "(360) 705-0291",
+     "notes": "Delivers boxes of groceries to your door by arrangement. Usually calls back within 24 hours. Can accommodate dietary restrictions.",
+     "tags": [
+      "homebound-delivery"
+     ]
+    },
+    {
+     "name": "Capital Christian PEACE Center",
+     "phone": "(360) 456-1140",
+     "address": "4443 Martin Way E, Olympia",
+     "hours": "Mon to Wed, 9:00 AM to 1:00 PM",
+     "notes": "Groceries and basic essentials."
+    },
+    {
+     "name": "Hidden Creek Community Church",
+     "phone": "(360) 357-3739",
+     "address": "1807 9th Ave SW, Olympia",
+     "hours": "Wed, 9:30 to 11:00 AM",
+     "notes": "Drive-up or walk-up."
+    },
+    {
+     "name": "St. Christopher's Community Church",
+     "phone": "(360) 866-2111",
+     "address": "7902 Steamboat Rd NW, Olympia",
+     "hours": "3rd Thursday of the month, 2:00 to 4:00 PM"
+    },
+    {
+     "name": "Adventist Community Service Center",
+     "phone": "(360) 943-1518",
+     "address": "1029 N Puget St, Olympia",
+     "hours": "Tue, 9:15 AM to 12:00 PM",
+     "notes": "Emergency food and bread."
+    },
+    {
+     "name": "Emergency Outreach Food Pantry",
+     "phone": "(360) 491-0890",
+     "address": "906 Bowker St SE, Lacey",
+     "hours": "Mon, Wed, Fri, 1:00 to 2:45 PM",
+     "notes": "Drop-in, no application.",
+     "tags": [
+      "no-id",
+      "walk-in"
+     ]
+    },
+    {
+     "name": "Tenino Food Bank",
+     "phone": "(360) 264-5505",
+     "address": "798 Sussex Ave W, Tenino",
+     "hours": "Tue and Thu, 9:00 AM to 12:00 PM",
+     "notes": "No ID or proof of address required. Does Tuesday deliveries for shut-ins. Carries pet food.",
+     "tags": [
+      "no-id",
+      "homebound-delivery",
+      "pet-food"
+     ]
+    },
+    {
+     "name": "Olympia Union Gospel Mission",
+     "phone": "(360) 709-9725",
+     "address": "413 Franklin St NE, Olympia",
+     "hours": "Mon to Fri at 6:30 AM, 12:00 PM and 5:00 PM, plus weekend meals",
+     "notes": "Three free hot meals a day, open to anyone.",
+     "tags": [
+      "hot-meal",
+      "no-id"
+     ]
+    },
+    {
+     "name": "The Food Source Foundation",
+     "address": "Next to the downtown Olympia transit centre",
+     "hours": "Mon, Wed, Fri, 6:00 to 7:00 PM",
+     "notes": "Free ready-to-eat meals. No ID, no questions asked.",
+     "tags": [
+      "hot-meal",
+      "no-id"
+     ]
+    },
+    {
+     "name": "Senior Nutrition Program (Meals on Wheels via South Sound Seniors)",
+     "phone": "(360) 586-6181",
+     "address": "222 Columbia St NW, Olympia",
+     "notes": "Hot and frozen meal delivery for homebound seniors 60 and over, and eligible adults with disabilities depending on program criteria.",
+     "tags": [
+      "homebound-delivery",
+      "age-60-plus"
+     ]
+    }
+   ]
+  }
+ ]
+}
